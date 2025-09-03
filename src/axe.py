@@ -6,12 +6,17 @@ import requests
 from api import HTTP, API
 
 
-def request(ip: str, endpoint: str) -> requests.Response | None:
+def request(
+        ip: str,
+        endpoint: str,
+        body: dict | None = None
+) -> requests.Response | None:
     """Make and return the proper request for the given IP addr and endpoint.
 
     Args:
         ip: The IP of the [axe] device.
         endpoint: The desired AxeOS endpoint to hit.
+        body: The body data to send with PATCH/POST requests (default=None).
 
     Returns:
         A `requests.Response` response object else `None`
@@ -23,11 +28,11 @@ def request(ip: str, endpoint: str) -> requests.Response | None:
         if method == "GET":
             return requests.get(url)
         elif method == "POST":
-            body = {}  # TODO Implement
-            return requests.post(url)
+            raise NotImplementedError  # TODO Implement `body`
+            # return requests.post(url)
         elif method == "PATCH":
-            body = {}  # TODO Implement
-            return requests.patch(url)
+            # return requests.patch(url)
+            raise NotImplementedError  # TODO Implement `body`
         else:
             raise ValueError("Not a valid HTTP method for this API.")
     except Exception as e:
