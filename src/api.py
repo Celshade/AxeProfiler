@@ -1,3 +1,5 @@
+
+HTTP = "http://"
 API = {
     "scan": {  # scan for axes on network
         "type": "GET",

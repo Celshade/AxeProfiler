@@ -1,24 +1,38 @@
 from pprint import pprint
+# import json
 
 import requests
 
-from api import API
+from api import HTTP, API
 
 
-HTTP = "http://"
+def request(ip: str, endpoint: str) -> requests.Response | None:
+    """Make and return the proper request for the given IP addr and endpoint.
 
+    Args:
+        ip: The IP of the [axe] device.
+        endpoint: The desired AxeOS endpoint to hit.
 
-def request(ip: str, endpoint: str):
-    api = API[endpoint]
+    Returns:
+        A `requests.Response` response object else `None`
+    """
 
-    if api["type"] == "GET":
-        return requests.get(f"{HTTP}{device_ip}{api['url']}")
-    elif api["type"] == "POST":
-        return requests.post(f"{HTTP}{device_ip}{api['url']}")
-    elif api["type"] == "PATCH":
-        return requests.patch(f"{HTTP}{device_ip}{api['url']}")
-    else:
-        raise NotImplementedError("Not yet available")
+    try:
+        method, url = API[endpoint]["type"], f"{HTTP}{ip}{API[endpoint]['url']}"
+
+        if method == "GET":
+            return requests.get(url)
+        elif method == "POST":
+            body = {}  # TODO Implement
+            return requests.post(url)
+        elif method == "PATCH":
+            body = {}  # TODO Implement
+            return requests.patch(url)
+        else:
+            raise ValueError("Not a valid HTTP method for this API.")
+    except Exception as e:
+        print(e)
+        return None
 
 
 if __name__ == "__main__":
