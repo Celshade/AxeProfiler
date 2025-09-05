@@ -1,9 +1,12 @@
 from pprint import pprint
-# import json
+import json
 
 import requests
 
 from api import HTTP, API
+
+# Response obj from AxeOS API GET /api/system/info
+AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 
 
 def request(
@@ -26,7 +29,11 @@ def request(
         method, url = API[endpoint]["type"], f"{HTTP}{ip}{API[endpoint]['url']}"
 
         if method == "GET":
-            return requests.get(url)
+            res = requests.get(url)
+
+            if res.status_code == 200:
+                return res.json()
+            raise ValueError(res.status_code)
         elif method == "POST":
             raise NotImplementedError  # TODO Implement `body`
             # return requests.post(url)
@@ -35,12 +42,32 @@ def request(
             raise NotImplementedError  # TODO Implement `body`
         else:
             raise ValueError("Not a valid HTTP method for this API.")
-    except Exception as e:
-        print(e)
+    except ValueError as ve:
+        print(f"Request error: HTTP {ve} for {method} {url}")
         return None
+    except Exception as e:
+        print(f"Unknown error: {e} for {method} {url}")
+        return None
+
+
+def save_existing_profile(ip: str, current_data: AXE_INFO_OBJ) -> None:
+    """
+    """
+    # Get existing freq/c.volt
+    data = request(ip, "info")
+    profile_data = {
+        key: data[key] for key in data.keys() & (
+            "hostname", "frequency", "coreVoltage", "fanspeed"
+        )
+    }
+    print(profile_data)
+    # TODO
+
 
 
 if __name__ == "__main__":
     device_ip = input("Enter IP: ")
     res = request(device_ip, "info")
-    pprint(res.json())
+    assert res
+    save_existing_profile(device_ip, res)
+    # pprint(res.json())
