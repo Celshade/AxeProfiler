@@ -10,6 +10,7 @@ from api import HTTP, API
 AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 
 
+# TODO handle invalid/unknown IP
 def request(
         ip: str,
         endpoint: str,
@@ -51,7 +52,7 @@ def request(
         return None
 
 
-def save_existing_profile(ip: str, current_data: AXE_INFO_OBJ) -> None:
+def get_current_config(ip: str) -> dict[str, str]:
     """
     """
     # Get existing freq/c.volt
@@ -61,20 +62,25 @@ def save_existing_profile(ip: str, current_data: AXE_INFO_OBJ) -> None:
             "hostname", "frequency", "coreVoltage", "fanspeed"
         )
     }
-    print(profile_data)
-    # TODO
+    print(profile_data)  # TODO comment out
+    return profile_data
 
 
-def create_profile_dir() -> None:
+def ensure_profile_dir() -> None:
     """Check for an existing profiles dir and create one if needed.
     """
-    if not os.path.isdir("./profiles"):
-        os.mkdir("./profiles")
+    try:
+        if not os.path.isdir("./profiles"):
+            os.mkdir("./profiles")
+            assert os.path.exists("./profiles")
+            print("No existing profiles dir found - created profiles dir.")
+        else:
+            print("Profiles dir already exists 👍🏽")
+    except AssertionError:
+        print("Failed to confirm or create a profiles dir.")
 
 
 if __name__ == "__main__":
     device_ip = input("Enter IP: ")
-    res = request(device_ip, "info")
-    assert res
-    save_existing_profile(device_ip, res)
-    # pprint(res.json())
+    config = get_current_config(ip=device_ip)
+    ensure_profile_dir()
