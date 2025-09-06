@@ -70,7 +70,7 @@ def get_current_config(ip: str) -> dict[str, str]:
 
 
 def ensure_profile_dir() -> None:
-    """Check for an existing profiles dir and create one if needed.
+    """Check for an existing `profiles` dir and create one if needed.
     """
     try:
         if not os.path.isdir("./profiles"):
@@ -78,7 +78,7 @@ def ensure_profile_dir() -> None:
             assert os.path.exists("./profiles")
             print("No existing profiles dir found - created profiles dir.")
         else:
-            print("Profiles dir already exists 👍🏽")
+            print("`Profiles` dir already exists 👍")
     except AssertionError:
         print("Failed to confirm or create a profiles dir.")
 
@@ -91,13 +91,13 @@ def create_profile(config: dict[str, str]) -> None:
     """
     try:
         ensure_profile_dir()
-        profile_name = input("Enter a name for the profile: ")
+        profile_name = input("Enter a name for the profile: ")  # NOTE move?
         config["profile"] = profile_name
 
         with open(f"./profiles/{profile_name}.json", 'w') as f:
             f.write(json.dumps(config, indent=40))
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
-    except Exception("Error creating profile.") as e:
+    except Exception(f"Error creating profile {profile_name}.") as e:
         print(e)
 
 
