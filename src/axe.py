@@ -5,6 +5,7 @@ import os
 import requests
 
 from api import HTTP, API
+from profiles import Profile
 
 # Response obj from AxeOS API GET /api/system/info
 AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
@@ -60,7 +61,7 @@ def get_current_config(ip: str) -> dict[str, str]:
     # pprint(data)
     profile_data = {
         key: data[key] for key in data.keys() & (
-            "hostname", "frequency", "coreVoltage", "fanspeed"
+            "hostname", "frequency", "core_voltage", "fan_speed"
         )
     }
     profile_data["IP"] = ip
@@ -134,3 +135,8 @@ if __name__ == "__main__":
     print("Loading profile... ⏳")
     updated_profile = load_profile(profile.get("profile"))
     print(updated_profile == profile)  # TODO remove
+
+    print()
+    prof = Profile(updated_profile)
+    print(prof)
+    print(prof.__repr__())
