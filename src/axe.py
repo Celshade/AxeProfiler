@@ -1,5 +1,6 @@
 from pprint import pprint
 import json
+import os
 
 import requests
 
@@ -13,7 +14,7 @@ def request(
         ip: str,
         endpoint: str,
         body: dict | None = None
-) -> requests.Response | None:
+) -> requests.Response | None:  # TODO update return annotation if using .json()
     """Make and return the proper request for the given IP addr and endpoint.
 
     Args:
@@ -63,6 +64,12 @@ def save_existing_profile(ip: str, current_data: AXE_INFO_OBJ) -> None:
     print(profile_data)
     # TODO
 
+
+def create_profile_dir() -> None:
+    """Check for an existing profiles dir and create one if needed.
+    """
+    if not os.path.isdir("./profiles"):
+        os.mkdir("./profiles")
 
 
 if __name__ == "__main__":
