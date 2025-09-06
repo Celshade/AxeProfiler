@@ -77,8 +77,8 @@ def ensure_profile_dir() -> None:
             os.mkdir("./profiles")
             assert os.path.exists("./profiles")
             print("No existing profiles found - created a profiles dir ✅")
-        elif os.listdir("./profiles"):
-            print("Profiles confirmed ✅")  # TODO enhance verification (obj)?
+        elif num_profiles := len(os.listdir("./profiles")):
+            print(f"{num_profiles} confirmed ✅")  # TODO enhance verification?
         else:
             print("`Profiles` dir already exists 👍")
     except AssertionError:
