@@ -57,12 +57,15 @@ def get_current_config(ip: str) -> dict[str, str]:
     """
     # Get existing freq/c.volt
     data = request(ip, "info")
+    # pprint(data)
     profile_data = {
         key: data[key] for key in data.keys() & (
             "hostname", "frequency", "coreVoltage", "fanspeed"
         )
     }
-    print(profile_data)  # TODO comment out
+    profile_data["IP"] = ip
+
+    print(profile_data)  # TODO remove
     return profile_data
 
 
@@ -80,7 +83,25 @@ def ensure_profile_dir() -> None:
         print("Failed to confirm or create a profiles dir.")
 
 
+def create_profile(config: dict[str, str]) -> None:
+    """Create and save a profile for the given config.
+
+    Args:
+        config: The config data to save to the profile.
+    """
+    try:
+        ensure_profile_dir()
+        profile_name = input("Enter a name for the profile: ")
+        config["profile"] = profile_name
+
+        with open(f"./profiles/{profile_name}.json", 'w') as f:
+            f.write(json.dumps(config, indent=40))
+        assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
+    except Exception("Error creating profile.") as e:
+        print(e)
+
+
 if __name__ == "__main__":
     device_ip = input("Enter IP: ")
     config = get_current_config(ip=device_ip)
-    ensure_profile_dir()
+    create_profile(config=config)
