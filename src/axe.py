@@ -76,32 +76,61 @@ def ensure_profile_dir() -> None:
         if not os.path.isdir("./profiles"):
             os.mkdir("./profiles")
             assert os.path.exists("./profiles")
-            print("No existing profiles dir found - created profiles dir.")
+            print("No existing profiles found - created a profiles dir ✅")
+        elif os.listdir("./profiles"):
+            print("Profiles confirmed ✅")  # TODO enhance verification (obj)?
         else:
             print("`Profiles` dir already exists 👍")
     except AssertionError:
-        print("Failed to confirm or create a profiles dir.")
+        print("Failed to create a `profiles` dir 😢")
 
 
-def create_profile(config: dict[str, str]) -> None:
+def create_profile(
+        config: dict[str, str],
+        name: str | None = None
+    ) -> dict[str, str]:
     """Create and save a profile for the given config.
 
     Args:
         config: The config data to save to the profile.
+        name(optional): The profile name (default=None).
+    Returns:
+        A profile object/dict containing axe config data.
     """
     try:
         ensure_profile_dir()
-        profile_name = input("Enter a name for the profile: ")  # NOTE move?
+        profile_name = name or input("Enter a name for this profile: ")
         config["profile"] = profile_name
 
         with open(f"./profiles/{profile_name}.json", 'w') as f:
             f.write(json.dumps(config, indent=40))
+
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
+        print(f"Profile: {profile_name} created ✅")
+        return config
     except Exception(f"Error creating profile {profile_name}.") as e:
         print(e)
+
+
+def load_profile(profile_name: str) -> dict[str, str]:
+    """Load an existing profile.
+
+    Args:
+        profile_name: The name of the profile to load.
+    """
+    # TODO handle errors and assertions
+    with open(f"./profiles/{profile_name}.json", 'r') as f:
+        profile = json.loads(f.read())  # TODO turn into a Profile() obj?
+
+    return profile
 
 
 if __name__ == "__main__":
     device_ip = input("Enter IP: ")
     config = get_current_config(ip=device_ip)
-    create_profile(config=config)
+    profile = create_profile(config=config)
+
+    print(end='\n')
+    print("Loading profile... ⏳")
+    updated_profile = load_profile(profile.get("profile"))
+    print(updated_profile == profile)  # TODO remove
