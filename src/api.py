@@ -1,7 +1,7 @@
 
 HTTP = "http://"
 API = {
-    "scan": {  # scan for axes on network
+    "scan": {  # scan for available networks (not axes)
         "type": "GET",
         "url": "/api/system/wifi/scan"
     },

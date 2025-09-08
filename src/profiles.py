@@ -5,8 +5,8 @@ class Profile():
         self._data = data
 
     def __repr__(self):
-        return f"Profile({self._data})"
+        return f"__repr__ ->>\n Profile({self._data})"  # TODO remove __repr__ text
 
     def __str__(self):
-        return "hi profile"
+        return "This is a profile printed from str()\n"
 

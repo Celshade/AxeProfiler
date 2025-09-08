@@ -61,7 +61,7 @@ def get_current_config(ip: str) -> dict[str, str]:
     # pprint(data)
     profile_data = {
         key: data[key] for key in data.keys() & (
-            "hostname", "frequency", "core_voltage", "fan_speed"
+            "hostname", "frequency", "coreVoltage", "fan_speed"
         )
     }
     profile_data["IP"] = ip
@@ -77,11 +77,11 @@ def ensure_profile_dir() -> None:
         if not os.path.isdir("./profiles"):
             os.mkdir("./profiles")
             assert os.path.exists("./profiles")
-            print("No existing profiles found - created a profiles dir ✅")
+            print("No profiles dir found - creating local profiles dir at . ✅")
         elif num_profiles := len(os.listdir("./profiles")):
-            print(f"{num_profiles} confirmed ✅")  # TODO enhance verification?
+            print(f"{num_profiles} existing profiles found! ✅")  # TODO enhance verification?
         else:
-            print("`Profiles` dir already exists 👍")
+            print("`Profiles` dir exists, but no profiles found 📂")
     except AssertionError:
         print("Failed to create a `profiles` dir 😢")
 
@@ -89,7 +89,7 @@ def ensure_profile_dir() -> None:
 def create_profile(
         config: dict[str, str],
         name: str | None = None
-    ) -> dict[str, str]:
+    ) -> dict[str, str] | None:
     """Create and save a profile for the given config.
 
     Args:
@@ -107,7 +107,7 @@ def create_profile(
             f.write(json.dumps(config, indent=40))
 
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
-        print(f"Profile: {profile_name} created ✅")
+        print(f"Profile: {profile_name} created! ✅")
         return config
     except Exception(f"Error creating profile {profile_name}.") as e:
         print(e)
@@ -120,19 +120,22 @@ def load_profile(profile_name: str) -> dict[str, str]:
         profile_name: The name of the profile to load.
     """
     # TODO handle errors and assertions
-    with open(f"./profiles/{profile_name}.json", 'r') as f:
-        profile = json.loads(f.read())  # TODO turn into a Profile() obj?
+    try:
+        print("Loading profile... ⏳")
+        with open(f"./profiles/{profile_name}.json", 'r') as f:
+            profile = json.loads(f.read())  # TODO turn into a Profile() obj?
 
-    return profile
+        return profile
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
-    device_ip = input("Enter IP: ")
+    device_ip = "192.168.0.2"  # input("Enter IP: ")  # NOTE testing IP only
     config = get_current_config(ip=device_ip)
     profile = create_profile(config=config)
 
     print(end='\n')
-    print("Loading profile... ⏳")
     updated_profile = load_profile(profile.get("profile"))
     print(updated_profile == profile)  # TODO remove
 
