@@ -104,7 +104,7 @@ def create_profile(
         config["profile"] = profile_name
 
         with open(f"./profiles/{profile_name}.json", 'w') as f:
-            f.write(json.dumps(config, indent=40))
+            f.write(json.dumps(config, indent=4))
 
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
         print(f"Profile: {profile_name} created! ✅")
