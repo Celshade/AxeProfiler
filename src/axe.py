@@ -108,8 +108,8 @@ def create_profile(
 
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
         print(f"Profile: {profile_name} created! ✅")
-        return profile
-    except Exception(f"Error creating profile {profile_name}.") as e:
+        return Profile(profile)
+    except Exception(f"Error creating profile {profile_name} ❌") as e:
         print(e)
 
 
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     profile = create_profile(config=config)
 
     print(end='\n')
-    updated_profile = load_profile(profile.get("profile"))
-    print(updated_profile == profile)  # TODO remove
+    updated_profile = load_profile(profile._data.get("profile"))
+    print(updated_profile == profile._data)  # TODO remove
 
     print()
     prof = Profile(updated_profile)
