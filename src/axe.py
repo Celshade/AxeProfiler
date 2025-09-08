@@ -101,14 +101,14 @@ def create_profile(
     try:
         ensure_profile_dir()
         profile_name = name or input("Enter a name for this profile: ")
-        config["profile"] = profile_name
+        profile = {"profile": profile_name, **config}
 
         with open(f"./profiles/{profile_name}.json", 'w') as f:
-            f.write(json.dumps(config, indent=4))
+            f.write(json.dumps(profile, indent=4))
 
         assert os.path.exists(f"./profiles/{profile_name}.json")  # TODO remove
         print(f"Profile: {profile_name} created! ✅")
-        return config
+        return profile
     except Exception(f"Error creating profile {profile_name}.") as e:
         print(e)
 
