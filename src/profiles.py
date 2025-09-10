@@ -10,3 +10,11 @@ class Profile():
     def __str__(self):
         return "This is a profile printed from str()\n"
 
+    def update_profile():
+        raise NotImplementedError
+
+    def run_profile():
+        raise NotImplementedError
+
+    def delete_profile():
+        raise NotImplementedError

@@ -70,7 +70,7 @@ def get_current_config(ip: str) -> dict[str, str]:
     return profile_data
 
 
-def ensure_profile_dir() -> None:
+def check_for_profiles() -> None:
     """Check for an existing `profiles` dir and create one if needed.
     """
     try:
@@ -99,7 +99,7 @@ def create_profile(
         A profile object/dict containing axe config data.
     """
     try:
-        ensure_profile_dir()
+        check_for_profiles()
         profile_name = name or input("Enter a name for this profile: ")
         profile = {"profile": profile_name, **config}
 
@@ -119,13 +119,14 @@ def load_profile(profile_name: str) -> dict[str, str]:
     Args:
         profile_name: The name of the profile to load.
     """
-    # TODO handle errors and assertions
     try:
         print("Loading profile... ⏳")
         with open(f"./profiles/{profile_name}.json", 'r') as f:
             profile = json.loads(f.read())  # TODO turn into a Profile() obj?
 
         return profile
+    except FileNotFoundError as fe:
+        print(f"Could not find a profile named: {profile_name} ⚠")
     except Exception as e:
         print(e)
 
