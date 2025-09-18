@@ -1,79 +1,119 @@
 from os import rename
+from typing import Self
 import json
 
 
 class Profile():
+    """A representation of a Profile able to be used by a miner running AxeOS.
     """
-    """
-    def __init__(self, name: str, frequency: int, coreVoltage: int):
+    def __init__(
+            self,
+            name: str,
+            frequency: int,
+            coreVoltage: int,
+            fanspeed: int):
         self._name = name
         self._frequency = frequency
         self._coreVoltage = coreVoltage
+        self._fanspeed = fanspeed
 
     def __repr__(self):
-        return f"Profile({self._name}, {self._frequency}, {self._coreVoltage})"
+        return ' '.join((
+            f"Profile({self._name},",
+            f"{self._frequency},",
+            f"{self._coreVoltage},",
+            f"{self._fanspeed})",
+        ))
 
     def __str__(self):
         return json.dumps(self.data, indent=4)
 
     @property
-    def data(self):
+    def name(self) -> str:
+        """Return the profile name."""
+        return self._name
+
+    @property
+    def frequency(self) -> int:
+        """Return the profile frequency setting."""
+        return self._frequency
+
+    @property
+    def coreVoltage(self) -> int:
+        """Return the profile core voltage setting."""
+        return self._coreVoltage
+
+    @property
+    def fanspeed(self) -> int:
+        """Return the profile fan speed setting."""
+        return self._fanspeed
+
+    @property
+    def data(self) -> dict[str, str | int]:
+        """Return a dict of profile data (JSON compatible)."""
         return {
             "name": self._name,
             "frequency": self._frequency,
-            "coreVoltage": self._coreVoltage
+            "coreVoltage": self._coreVoltage,
+            "fanspeed": self._fanspeed
         }
 
-    def validate_profile(self) -> bool:
-        return 
+    @classmethod
+    def create_profile(cls, config: dict[str, str]) -> Self:
+        """Create and return a new instance of `Profile` for the given config.
 
-    @data.setter
-    def data(self, new_data: dict):
-        if "name" in new_data and isinstance(new_data["name"], str):
-            self._name == new_data["name"]
-            print(f"Upda {self._name}")
-        
-        if "frequency" in new_data and isinstance(new_data["frequency"], str):
-            self._name == new_data["frequency"]
-        
-        if "coreVoltage" in new_data and isinstance(new_data["coreVoltage"], str):
-            self._name == new_data["coreVoltage"]
+        The ncecessary class instantiation data (name, frequency, coreVoltage,
+        fanspeed) will be validated and taken from the `config` argument -
+        additional data may be included in the config, but it will not persist
+        in the object being returned.
 
+        Args:
+            config: A dict of config data to create the Profile from.
+        """
+        profile_data = {}
 
-
-        if "name" in new_data:
-            self._name = new_data["name"]
+        # Validate each of the necessary Profile params
+        if "name" in config and isinstance(config["name"], str):
+            profile_data["name"] = config["name"]
         else:
-            print("no name")
-        # self._name = new_data.get("name") or self._name
-        # self._frequency = new_data.get("frequency") or self._frequency
-        # self._coreVoltage = new_data.get("coreVoltage") or self._coreVoltage
+            raise ValueError("Missing or incorrect format for `name`")
 
-        # if name:
-        #     self._data["name"] = name
-        # if frequency:
-        #     self._data["frequency"] = frequency
-        # if coreVoltage:
-        #     self._data["coreVoltage"] = coreVoltage
+        if "frequency" in config and isinstance(config["frequency"], int):
+            profile_data["frequency"] = config["frequency"]
+        else:
+            raise ValueError("Missing or incorrect format for `frequency`")
 
+        if "coreVoltage" in config and isinstance(config["coreVoltage"], int):
+            profile_data["coreVoltage"] = config["coreVoltage"]
+        else:
+            raise ValueError("Missing or incorrect format for `coreVoltage`")
+
+        if "fanspeed" in config and isinstance(config["fanspeed"], int):
+            profile_data["fanspeed"] = config["fanspeed"]
+        else:
+            raise ValueError("Missing or incorrect format for `fanspeed`")
+
+        return cls(
+            name=profile_data["name"],
+            frequency=profile_data["frequency"],
+            coreVoltage=profile_data["coreVoltage"],
+            fanspeed=profile_data["fanspeed"]
+        )
+
+    def validate_profile(self) -> bool:
+        return False  # TODO implement
 
     def update_profile(
             self,
             name: str = None,
-            frequency: str = None,
-            coreVoltage: str = None
+            frequency: int = None,
+            coreVoltage: int = None,
+            fanspeed: int = None
         ) -> None:
-        """
-        """
         return NotImplementedError
 
-    # def save_profile(self):
-    #     try:
-    #         assert all(self._data[i] for i in self._data)
-    #         with open(f"{self._data['name']}", 'w'):
-
-    #     except AssertionError:
-    #         print("No profile name set - cannot save profile.")
+    def save_profile(self):
+        raise NotImplementedError
 
     def run_profile(self):
         raise NotImplementedError
