@@ -9,17 +9,20 @@ class Profile():
     def __init__(
             self,
             profile_name: str,
+            device_name: str,
             frequency: int,
             coreVoltage: int,
             fanspeed: int):
-        self._profile_name = profile_name
+        self._name = profile_name
+        self._device = device_name
         self._frequency = frequency
         self._coreVoltage = coreVoltage
         self._fanspeed = fanspeed
 
     def __repr__(self):
         return ' '.join((
-            f"Profile({self._profile_name},",
+            f"Profile({self._name},",
+            f"{self._device},",
             f"{self._frequency},",
             f"{self._coreVoltage},",
             f"{self._fanspeed})",
@@ -31,7 +34,12 @@ class Profile():
     @property
     def name(self) -> str:
         """Return the profile name."""
-        return self._profile_name
+        return self._name
+
+    @property
+    def device(self) -> str:
+        """Return the device name."""
+        return self._device
 
     @property
     def frequency(self) -> int:
@@ -52,7 +60,8 @@ class Profile():
     def data(self) -> dict[str, str | int]:
         """Return a dict of profile data (JSON compatible)."""
         return {
-            "profile_name": self._profile_name,
+            "profile_name": self._name,
+            "device_name": self._device,
             "frequency": self._frequency,
             "coreVoltage": self._coreVoltage,
             "fanspeed": self._fanspeed
@@ -76,7 +85,12 @@ class Profile():
         if "profile_name" in config and isinstance(config["profile_name"], str):
             profile_data["profile_name"] = config["profile_name"]
         else:
-            raise ValueError("Missing or incorrect format for `name`")
+            raise ValueError("Missing or incorrect format for `profile_name`")
+
+        if "hostname" in config and isinstance(config["hostname"], str):
+            profile_data["device_name"] = config["hostname"]
+        else:
+            raise ValueError("Missing or incorrect format for `device_name`")
 
         if "frequency" in config and isinstance(config["frequency"], int):
             profile_data["frequency"] = config["frequency"]
@@ -95,17 +109,16 @@ class Profile():
 
         return cls(
             profile_name=profile_data["profile_name"],
+            device_name=profile_data["device_name"],
             frequency=profile_data["frequency"],
             coreVoltage=profile_data["coreVoltage"],
             fanspeed=profile_data["fanspeed"]
         )
 
-    def validate_profile(self) -> bool:
-        return False  # TODO implement
-
     def update_profile(
             self,
             profile_name: str = None,
+            device_name: str = None,
             frequency: int = None,
             coreVoltage: int = None,
             fanspeed: int = None
