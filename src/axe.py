@@ -128,9 +128,8 @@ def load_profile(profile_name: str) -> dict[str, str]:
     try:
         print("Loading profile... ⏳")
         with open(f"./profiles/{profile_name}.json", 'r') as f:
-            profile = json.loads(f.read())  # TODO turn into a Profile() obj?
+            return Profile.create_profile(json.loads(f.read()))
 
-        return profile
     except FileNotFoundError as fe:
         print(f"Could not find a profile named: {profile_name} ⚠")
     except Exception as e:
@@ -144,8 +143,8 @@ if __name__ == "__main__":
     print(profile)
 
     print(end='\n')
-    updated_profile = load_profile(profile.name)
-    print(updated_profile == profile.data)  # TODO remove
+    existing_profile = load_profile(profile.name)
+    if profile.data != existing_profile.data:
+        print(existing_profile.data, end='\n')
 
-    print()
     print(profile.__repr__())

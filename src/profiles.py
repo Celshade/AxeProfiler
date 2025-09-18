@@ -9,12 +9,12 @@ class Profile():
     def __init__(
             self,
             profile_name: str,
-            device_name: str,
+            hostname: str,
             frequency: int,
             coreVoltage: int,
             fanspeed: int):
         self._name = profile_name
-        self._device = device_name
+        self._hostname = hostname
         self._frequency = frequency
         self._coreVoltage = coreVoltage
         self._fanspeed = fanspeed
@@ -22,7 +22,7 @@ class Profile():
     def __repr__(self):
         return ' '.join((
             f"Profile({self._name},",
-            f"{self._device},",
+            f"{self._hostname},",
             f"{self._frequency},",
             f"{self._coreVoltage},",
             f"{self._fanspeed})",
@@ -37,9 +37,9 @@ class Profile():
         return self._name
 
     @property
-    def device(self) -> str:
+    def hostname(self) -> str:
         """Return the device name."""
-        return self._device
+        return self._hostname
 
     @property
     def frequency(self) -> int:
@@ -61,7 +61,7 @@ class Profile():
         """Return a dict of profile data (JSON compatible)."""
         return {
             "profile_name": self._name,
-            "device_name": self._device,
+            "hostname": self._hostname,
             "frequency": self._frequency,
             "coreVoltage": self._coreVoltage,
             "fanspeed": self._fanspeed
@@ -88,9 +88,9 @@ class Profile():
             raise ValueError("Missing or incorrect format for `profile_name`")
 
         if "hostname" in config and isinstance(config["hostname"], str):
-            profile_data["device_name"] = config["hostname"]
+            profile_data["hostname"] = config["hostname"]
         else:
-            raise ValueError("Missing or incorrect format for `device_name`")
+            raise ValueError("Missing or incorrect format for `hostname`")
 
         if "frequency" in config and isinstance(config["frequency"], int):
             profile_data["frequency"] = config["frequency"]
@@ -109,7 +109,7 @@ class Profile():
 
         return cls(
             profile_name=profile_data["profile_name"],
-            device_name=profile_data["device_name"],
+            hostname=profile_data["hostname"],
             frequency=profile_data["frequency"],
             coreVoltage=profile_data["coreVoltage"],
             fanspeed=profile_data["fanspeed"]
@@ -118,7 +118,7 @@ class Profile():
     def update_profile(
             self,
             profile_name: str = None,
-            device_name: str = None,
+            hostname: str = None,
             frequency: int = None,
             coreVoltage: int = None,
             fanspeed: int = None
