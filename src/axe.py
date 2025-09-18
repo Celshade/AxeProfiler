@@ -108,12 +108,9 @@ def create_profile(
                 **config
             }
         )
-        # print(profile, type(profile))  # TODO remove
-        # TODO move this into Profile.save_profile()
-        with open(f"./profiles/{profile.name}.json", 'w') as f:
-            f.write(json.dumps(profile.data, indent=4))
-
+        profile.save_profile()
         assert os.path.exists(f"./profiles/{profile.name}.json")  # TODO remove
+
         print(f"Profile: {profile.name} created! ✅")
         return profile
     except AssertionError:

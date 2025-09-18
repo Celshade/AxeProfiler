@@ -126,7 +126,11 @@ class Profile():
         return NotImplementedError
 
     def save_profile(self):
-        raise NotImplementedError
+        try:
+            with open(f"./profiles/{self.name}.json", 'w') as f:
+                f.write(json.dumps(self.data, indent=4))
+        except Exception as e:
+            raise e
 
     def run_profile(self):
         raise NotImplementedError
