@@ -8,18 +8,18 @@ class Profile():
     """
     def __init__(
             self,
-            name: str,
+            profile_name: str,
             frequency: int,
             coreVoltage: int,
             fanspeed: int):
-        self._name = name
+        self._profile_name = profile_name
         self._frequency = frequency
         self._coreVoltage = coreVoltage
         self._fanspeed = fanspeed
 
     def __repr__(self):
         return ' '.join((
-            f"Profile({self._name},",
+            f"Profile({self._profile_name},",
             f"{self._frequency},",
             f"{self._coreVoltage},",
             f"{self._fanspeed})",
@@ -31,7 +31,7 @@ class Profile():
     @property
     def name(self) -> str:
         """Return the profile name."""
-        return self._name
+        return self._profile_name
 
     @property
     def frequency(self) -> int:
@@ -52,7 +52,7 @@ class Profile():
     def data(self) -> dict[str, str | int]:
         """Return a dict of profile data (JSON compatible)."""
         return {
-            "name": self._name,
+            "profile_name": self._profile_name,
             "frequency": self._frequency,
             "coreVoltage": self._coreVoltage,
             "fanspeed": self._fanspeed
@@ -73,8 +73,8 @@ class Profile():
         profile_data = {}
 
         # Validate each of the necessary Profile params
-        if "name" in config and isinstance(config["name"], str):
-            profile_data["name"] = config["name"]
+        if "profile_name" in config and isinstance(config["profile_name"], str):
+            profile_data["profile_name"] = config["profile_name"]
         else:
             raise ValueError("Missing or incorrect format for `name`")
 
@@ -94,7 +94,7 @@ class Profile():
             raise ValueError("Missing or incorrect format for `fanspeed`")
 
         return cls(
-            name=profile_data["name"],
+            profile_name=profile_data["profile_name"],
             frequency=profile_data["frequency"],
             coreVoltage=profile_data["coreVoltage"],
             fanspeed=profile_data["fanspeed"]
@@ -105,7 +105,7 @@ class Profile():
 
     def update_profile(
             self,
-            name: str = None,
+            profile_name: str = None,
             frequency: int = None,
             coreVoltage: int = None,
             fanspeed: int = None

@@ -1,4 +1,3 @@
-from pprint import pprint
 import json
 import os
 
@@ -89,13 +88,13 @@ def check_for_profiles() -> None:
 
 def create_profile(
         config: dict[str, str],
-        name: str | None = None
+        profile_name: str | None = None
     ) -> Profile | None:
     """Create and save a profile for the given config.
 
     Args:
         config: The config data to save to the profile.
-        name(optional): The profile name (default=None).
+        profile_name(optional): The profile name (default=None).
     Returns:
         A profile object/dict containing axe config data.
     """
@@ -103,7 +102,9 @@ def create_profile(
         check_for_profiles()
         profile = Profile.create_profile(
             {
-                "name": name or input("Enter a name for this profile: "),
+                "profile_name": profile_name or input(
+                    "Enter a name for this profile: "
+                ),
                 **config
             }
         )
