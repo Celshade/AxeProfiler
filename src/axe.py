@@ -11,11 +11,10 @@ AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 
 
 # TODO handle invalid/unknown IP
-def request(
-        ip: str,
-        endpoint: str,
-        body: dict | None = None
-) -> requests.Response | None:  # TODO update return annotation if using .json()
+def request(ip: str,
+            endpoint: str,
+            body: dict | None = None) -> requests.Response | None:
+    # TODO update return annotation if using .json()
     """Make and return the proper request for the given IP addr and endpoint.
 
     Args:
@@ -24,7 +23,7 @@ def request(
         body: The body data to send with PATCH/POST requests (default=None).
 
     Returns:
-        A `requests.Response` response object else `None`
+        A jsonified response object else `None`
     """
 
     try:
@@ -52,11 +51,17 @@ def request(
         return None
 
 
-def get_current_config(ip: str) -> dict[str, str]:
+def get_current_config(ip: str) -> dict[str, str] | None:
     """
     """
     # Get existing freq/c.volt
     data = request(ip, "info")
+
+    # Check response and return early if empty
+    if not data:
+        print("Nothing returned from the request ❔")
+        return None
+
     # pprint(data)
     profile_data = {
         key: data[key] for key in data.keys() & (
@@ -86,17 +91,15 @@ def check_for_profiles() -> None:
         print("Failed to create a `profiles` dir 😢")
 
 
-def create_profile(
-        config: dict[str, str],
-        profile_name: str | None = None
-    ) -> Profile | None:
+def create_profile(config: dict[str, str],
+                   profile_name: str | None = None) -> Profile | None:
     """Create and save a profile for the given config.
 
     Args:
         config: The config data to save to the profile.
         profile_name(optional): The profile name (default=None).
     Returns:
-        A profile object/dict containing axe config data.
+        A Profile obj containing axe config data.
     """
     try:
         check_for_profiles()
@@ -145,6 +148,7 @@ if __name__ == "__main__":
     print(end='\n')
     existing_profile = load_profile(profile.name)
     if profile.data != existing_profile.data:
+        print("Profile does not match before and after saving")
         print(existing_profile.data, end='\n')
 
     print(profile.__repr__())

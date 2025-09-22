@@ -6,13 +6,9 @@ import json
 class Profile():
     """A representation of a Profile able to be used by a miner running AxeOS.
     """
-    def __init__(
-            self,
-            profile_name: str,
-            hostname: str,
-            frequency: int,
-            coreVoltage: int,
-            fanspeed: int):
+    def __init__(self,
+                 profile_name: str, hostname: str,
+                 frequency: int, coreVoltage: int, fanspeed: int):
         self._name = profile_name
         self._hostname = hostname
         self._frequency = frequency
@@ -68,18 +64,21 @@ class Profile():
         }
 
     @classmethod
-    def create_profile(cls, config: dict[str, str]) -> Self:
-        """Create and return a new instance of `Profile` for the given config.
+    def validate_profile_data(
+            self,
+            config: dict[str, str | int]) -> dict[str, str | int]:
+        """Validate and return a config dict for creating/updating Profiles.
 
-        The ncecessary class instantiation data (name, frequency, coreVoltage,
-        fanspeed) will be validated and taken from the `config` argument -
-        additional data may be included in the config, but it will not persist
-        in the object being returned.
+        NOTE: Additional data may be included in the config, but it will not
+        persist in the object being returned.
 
         Args:
             config: A dict of config data to create the Profile from.
+        Returns:
+            A `dict` of axe (miner) validated config data to use for creating
+            `Profile` objects.
         """
-        profile_data = {}
+        profile_data = {}  # container for valid profile data
 
         # Validate each of the necessary Profile params
         if "profile_name" in config and isinstance(config["profile_name"], str):
@@ -107,6 +106,22 @@ class Profile():
         else:
             raise ValueError("Missing or incorrect format for `fanspeed`")
 
+        return profile_data
+
+    @classmethod
+    def create_profile(cls, config: dict[str, str]) -> Self:
+        """Create and return a new instance of `Profile` for the given config.
+
+        The ncecessary class instantiation data (name, frequency, coreVoltage,
+        fanspeed) will be passed to a validation function prior to object
+        instantiation.
+
+        Args:
+            config: A dict of config data to create the Profile from.
+        Returns:
+            Returns a new `Profile`.
+        """
+        profile_data = cls.validate_profile_data(config)
         return cls(
             profile_name=profile_data["profile_name"],
             hostname=profile_data["hostname"],
@@ -115,15 +130,8 @@ class Profile():
             fanspeed=profile_data["fanspeed"]
         )
 
-    def update_profile(
-            self,
-            profile_name: str = None,
-            hostname: str = None,
-            frequency: int = None,
-            coreVoltage: int = None,
-            fanspeed: int = None
-        ) -> None:
-        return NotImplementedError
+    def update_profile(self, config: dict[str, str | int]) -> None:
+        raise NotImplementedError
 
     def save_profile(self):
         try:
