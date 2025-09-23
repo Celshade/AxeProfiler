@@ -1,5 +1,6 @@
 import json
 import os
+import time  # TODO remove after testing
 
 import requests
 
@@ -14,7 +15,6 @@ AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 def request(ip: str,
             endpoint: str,
             body: dict | None = None) -> requests.Response | None:
-    # TODO update return annotation if using .json()
     """Make and return the proper request for the given IP addr and endpoint.
 
     Args:
@@ -23,7 +23,9 @@ def request(ip: str,
         body: The body data to send with PATCH/POST requests (default=None).
 
     Returns:
-        A jsonified response object else `None`
+        A response object else `None`
+    Raises:
+        ValueError: if an invalid path for the API is requested.
     """
 
     try:
@@ -99,15 +101,15 @@ def create_profile(config: dict[str, str],
         config: The config data to save to the profile.
         profile_name(optional): The profile name (default=None).
     Returns:
-        A Profile obj containing axe config data.
+        A `Profile` obj containing axe config data.
     """
     try:
         check_for_profiles()
         profile = Profile.create_profile(
             {
-                "profile_name": profile_name or input(
-                    "Enter a name for this profile: "
-                ),
+                "profile_name": profile_name or
+                    input("Enter a name for this profile: ") or
+                    "default",
                 **config
             }
         )
@@ -122,18 +124,22 @@ def create_profile(config: dict[str, str],
         raise e
 
 
-def load_profile(profile_name: str) -> dict[str, str]:
+def load_profile(profile_name: str) -> Profile:
     """Load an existing profile.
 
     Args:
         profile_name: The name of the profile to load.
+    Returns:
+        A `Profile` obj containing axe config data.
+    Raises:
+        FileNotFoundError: if no file is found for the given name.
     """
     try:
         print("Loading profile... ⏳")
         with open(f"./profiles/{profile_name}.json", 'r') as f:
             return Profile.create_profile(json.loads(f.read()))
 
-    except FileNotFoundError as fe:
+    except FileNotFoundError:
         print(f"Could not find a profile named: {profile_name} ⚠")
     except Exception as e:
         print(e)
@@ -142,13 +148,24 @@ def load_profile(profile_name: str) -> dict[str, str]:
 if __name__ == "__main__":
     device_ip = "192.168.0.2"  # input("Enter IP: ")  # NOTE testing IP only
     config = get_current_config(ip=device_ip)
+    # create profile
     profile = create_profile(config=config)
+    print()
     print(profile)
+    print()
 
-    print(end='\n')
+    # compare active profile vs saved profile
     existing_profile = load_profile(profile.name)
     if profile.data != existing_profile.data:
         print("Profile does not match before and after saving")
-        print(existing_profile.data, end='\n')
+        print(existing_profile.data)
 
+    # check repr of profile
     print(profile.__repr__())
+    print()
+
+    # update profile
+    profile.update_profile({"fanspeed": 69})
+    print()
+    time.sleep(3)
+    profile.update_profile({"profile_name": "test2.CHANGED"})

@@ -1,6 +1,11 @@
-from os import rename
+from os import path, rename
 from typing import Self
 import json
+
+
+def validate_profile(profile_name: str) -> bool:
+    """Return True if the saved profile already exists else False."""
+    return path.exists(f"./profiles/{profile_name}.json")
 
 
 class Profile():
@@ -65,46 +70,47 @@ class Profile():
 
     @classmethod
     def validate_profile_data(
-            self,
-            config: dict[str, str | int]) -> dict[str, str | int]:
+            cls, config: dict[str, str | int]) -> dict[str, str | int]:
         """Validate and return a config dict for creating/updating Profiles.
 
-        NOTE: Additional data may be included in the config, but it will not
-        persist in the object being returned.
+        Only data used by `Profile` instantiation will be persisted in the
+        returned `dict` after type validation. NOTE: This method is only
+        intended for use in creating `Profile` objects - see
+        `Profile.update_profile()` for updates to existing profiles.
 
         Args:
             config: A dict of config data to create the Profile from.
         Returns:
-            A `dict` of axe (miner) validated config data to use for creating
-            `Profile` objects.
+            A dict of data validated for use in `Profile` creation.
         """
-        profile_data = {}  # container for valid profile data
+        profile_data = {}  # container for validated data
 
-        # Validate each of the necessary Profile params
-        if "profile_name" in config and isinstance(config["profile_name"], str):
+        if (config.get("profile_name")
+                and isinstance(config["profile_name"], str)):
             profile_data["profile_name"] = config["profile_name"]
         else:
-            raise ValueError("Missing or incorrect format for `profile_name`")
+            raise ValueError("Missing or incorrect type for `profile_name`")
 
-        if "hostname" in config and isinstance(config["hostname"], str):
+        if (config.get("hostname") and isinstance(config["hostname"], str)):
             profile_data["hostname"] = config["hostname"]
         else:
-            raise ValueError("Missing or incorrect format for `hostname`")
+            raise ValueError("Missing or incorrect type for `hostname`")
 
-        if "frequency" in config and isinstance(config["frequency"], int):
+        if (config.get("frequency") and isinstance(config["frequency"], int)):
             profile_data["frequency"] = config["frequency"]
         else:
-            raise ValueError("Missing or incorrect format for `frequency`")
+            raise ValueError("Missing or incorrect type for `frequency`")
 
-        if "coreVoltage" in config and isinstance(config["coreVoltage"], int):
+        if (config.get("coreVoltage")
+                and isinstance(config["coreVoltage"], int)):
             profile_data["coreVoltage"] = config["coreVoltage"]
         else:
-            raise ValueError("Missing or incorrect format for `coreVoltage`")
+            raise ValueError("Missing or incorrect type for `coreVoltage`")
 
-        if "fanspeed" in config and isinstance(config["fanspeed"], int):
+        if (config.get("fanspeed") and isinstance(config["fanspeed"], int)):
             profile_data["fanspeed"] = config["fanspeed"]
         else:
-            raise ValueError("Missing or incorrect format for `fanspeed`")
+            raise ValueError("Missing or incorrect type for `fanspeed`")
 
         return profile_data
 
@@ -120,21 +126,61 @@ class Profile():
             config: A dict of config data to create the Profile from.
         Returns:
             Returns a new `Profile`.
+        Raises:
+            AttributeError: if config data failes validation.
         """
-        profile_data = cls.validate_profile_data(config)
-        return cls(
-            profile_name=profile_data["profile_name"],
-            hostname=profile_data["hostname"],
-            frequency=profile_data["frequency"],
-            coreVoltage=profile_data["coreVoltage"],
-            fanspeed=profile_data["fanspeed"]
-        )
-
-    def update_profile(self, config: dict[str, str | int]) -> None:
-        raise NotImplementedError
-
-    def save_profile(self):
         try:
+            return cls(**cls.validate_profile_data(config))
+        except Exception:
+            raise AttributeError("Profile could not be created 😭")
+
+    def update_profile(self, updates: dict[str, str | int]) -> None:
+        """TODO
+
+        Args:
+            config: A dict of config data to create the Profile from.
+        """
+        try:
+            og_name = None  # Will retain the original name if name changes
+
+            # Reassign profile attrs if any are modified.
+            print("Checking for profile updates... ⏳")
+            if new_prof_name := updates.get("profile_name"):
+                print(f"Updating profile name: {self._name} -> {new_prof_name}")
+                og_name, self._name = self._name, new_prof_name
+
+            if new_hostname := updates.get("hostname"):
+                print(f"Updating device name: {self._hostname} -> {new_hostname}")
+                self._hostname = new_hostname
+
+            if new_frequency := updates.get("frequency"):
+                print(f"Updating frequency: {self._frequency} -> {new_frequency}")
+                self._frequency = new_frequency
+
+            if new_cVoltage := updates.get("coreVoltage"):
+                print(
+                    f"Updating coreVoltage: {self._coreVoltage} -> {new_cVoltage}")
+                self._coreVoltage = updates.get("coreVoltage")
+
+            if new_fanspeed := updates.get("fanspeed"):
+                print(f"Updating frequency: {self._fanspeed} -> {new_fanspeed}")
+                self._fanspeed = updates.get("fanspeed")
+
+            print("Saving profile updates... ⏳")
+            self.save_profile(replace_profile=og_name if og_name else None)
+
+        except ValueError as ve:
+            raise ve
+
+    def save_profile(self, replace_profile: str | None = None):
+        try:
+            if replace_profile and validate_profile(replace_profile):
+                existing_filename = f"./profiles/{replace_profile}.json"
+                with open(existing_filename, 'w') as f:
+                    f.write(json.dumps(self.data, indent=4))
+
+                # Rename the existing file
+                rename(existing_filename, f"./profiles/{self.name}.json")
             with open(f"./profiles/{self.name}.json", 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
