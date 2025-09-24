@@ -1,3 +1,5 @@
+# Source: ESP-Miner
+# https://github.com/bitaxeorg/ESP-Miner/blob/master/main/http_server/openapi.yaml
 
 HTTP = "http://"
 API = {
