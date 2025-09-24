@@ -8,10 +8,9 @@ from api import HTTP, API
 from profiles import Profile
 
 # Response obj from AxeOS API GET /api/system/info
-AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
+# AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 
 
-# TODO handle invalid/unknown IP
 def request(ip: str,
             endpoint: str,
             body: dict | None = None) -> requests.Response | None:
@@ -25,18 +24,21 @@ def request(ip: str,
     Returns:
         A response object else `None`
     Raises:
-        ValueError: if an invalid path for the API is requested.
+        ValueError: if an invalid HTTP method is specified for the endpoint.
+        requests.HTTPError: if an invalid path for the API is requested.
+        requests.ConnectionError: if the request takes too long or fails.
+        Exception: for any other request issues.
     """
 
     try:
         method, url = API[endpoint]["type"], f"{HTTP}{ip}{API[endpoint]['url']}"
 
         if method == "GET":
-            res = requests.get(url)
+            res = requests.get(url, timeout=5)
 
-            if res.status_code == 200:
-                return res.json()
-            raise ValueError(res.status_code)
+            if res.status_code != 200:
+                raise requests.HTTPError(f"Status code: {res.status_code}")
+            return res
         elif method == "POST":
             raise NotImplementedError  # TODO Implement `body`
             # return requests.post(url)
@@ -46,20 +48,28 @@ def request(ip: str,
         else:
             raise ValueError("Not a valid HTTP method for this API.")
     except ValueError as ve:
-        print(f"Request error: HTTP {ve} for {method} {url}")
+        print(f"{ve} for {method} {url}")
+        return None
+    except requests.HTTPError as httpe:
+        print(f"HTTP error: {httpe} for {method} {url}")
+        return None
+    except requests.ConnectionError as conne:
+        print(f"Timeout Error: {conne} for {method} {url}")
         return None
     except Exception as e:
-        print(f"Unknown error: {e} for {method} {url}")
+        print(f"Request error: {e} for {method} {url}")
         return None
 
 
 def get_current_config(ip: str) -> dict[str, str] | None:
-    """
+    """Get the current config from the device at the given IP.
+
+    Args:
+        ip: The IP of the [axe] device.
     """
     # Get existing freq/c.volt
-    data = request(ip, "info")
+    data = request(ip, "info").json()
 
-    # Check response and return early if empty
     if not data:
         print("Nothing returned from the request ❔")
         return None
@@ -72,7 +82,7 @@ def get_current_config(ip: str) -> dict[str, str] | None:
     }
     profile_data["IP"] = ip
 
-    print(profile_data)  # TODO remove
+    # print(profile_data)  # TODO remove
     return profile_data
 
 
@@ -80,13 +90,13 @@ def check_for_profiles() -> None:
     """Check for an existing `profiles` dir and create one if needed.
     """
     try:
-        if not os.path.isdir("./profiles"):
-            os.mkdir("./profiles")
-            assert os.path.exists("./profiles")
+        if not os.path.isdir("./.profiles"):
+            os.mkdir("./.profiles")
+            assert os.path.exists("./.profiles")
             print("No profiles dir found - creating local profiles dir at . ✅")
-        elif num_profiles := len(os.listdir("./profiles")):
+        elif num_profiles := len(os.listdir("./.profiles")):
             # TODO enhance verification?
-            print(f"{num_profiles} existing profiles found! ✅")
+            print(f"{num_profiles} existing files found! ✅")
         else:
             print("`Profiles` dir exists, but no profiles found 📂")
     except AssertionError:
@@ -114,7 +124,7 @@ def create_profile(config: dict[str, str],
             }
         )
         profile.save_profile()
-        assert os.path.exists(f"./profiles/{profile.name}.json")  # TODO remove
+        assert os.path.exists(f"./.profiles/{profile.name}.json")
 
         print(f"Profile: {profile.name} created! ✅")
         return profile
@@ -136,7 +146,7 @@ def load_profile(profile_name: str) -> Profile:
     """
     try:
         print("Loading profile... ⏳")
-        with open(f"./profiles/{profile_name}.json", 'r') as f:
+        with open(f"./.profiles/{profile_name}.json", 'r') as f:
             return Profile.create_profile(json.loads(f.read()))
 
     except FileNotFoundError:
@@ -168,4 +178,4 @@ if __name__ == "__main__":
     profile.update_profile({"fanspeed": 69})
     print()
     time.sleep(3)
-    profile.update_profile({"profile_name": "test2.CHANGED"})
+    profile.update_profile({"profile_name": "test.CHANGED"})

@@ -5,7 +5,7 @@ import json
 
 def validate_profile(profile_name: str) -> bool:
     """Return True if the saved profile already exists else False."""
-    return path.exists(f"./profiles/{profile_name}.json")
+    return path.exists(f"./.profiles/{profile_name}.json")
 
 
 class Profile():
@@ -175,13 +175,13 @@ class Profile():
     def save_profile(self, replace_profile: str | None = None):
         try:
             if replace_profile and validate_profile(replace_profile):
-                existing_filename = f"./profiles/{replace_profile}.json"
+                existing_filename = f"./.profiles/{replace_profile}.json"
                 with open(existing_filename, 'w') as f:
                     f.write(json.dumps(self.data, indent=4))
 
                 # Rename the existing file
-                rename(existing_filename, f"./profiles/{self.name}.json")
-            with open(f"./profiles/{self.name}.json", 'w') as f:
+                rename(existing_filename, f"./.profiles/{self.name}.json")
+            with open(f"./.profiles/{self.name}.json", 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
             raise e
