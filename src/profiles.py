@@ -145,25 +145,25 @@ class Profile():
 
             # Reassign profile attrs if any are modified.
             print("Checking for profile updates... ⏳")
-            if new_prof_name := updates.get("profile_name"):
-                print(f"Updating profile name: {self._name} -> {new_prof_name}")
-                og_name, self._name = self._name, new_prof_name
+            if profile_name := updates.get("profile_name"):
+                print(f"Updating profile name: {self._name} -> {profile_name}")
+                og_name, self._name = self._name, profile_name
 
-            if new_hostname := updates.get("hostname"):
-                print(f"Updating device name: {self._hostname} -> {new_hostname}")
-                self._hostname = new_hostname
+            if hostname := updates.get("hostname"):
+                print(f"Updating device name: {self._hostname} -> {hostname}")
+                self._hostname = hostname
 
-            if new_frequency := updates.get("frequency"):
-                print(f"Updating frequency: {self._frequency} -> {new_frequency}")
-                self._frequency = new_frequency
+            if frequency := updates.get("frequency"):
+                print(f"Updated frequency: {self._frequency} -> {frequency}")
+                self._frequency = frequency
 
-            if new_cVoltage := updates.get("coreVoltage"):
+            if cVoltage := updates.get("coreVoltage"):
                 print(
-                    f"Updating coreVoltage: {self._coreVoltage} -> {new_cVoltage}")
+                    f"Updating coreVoltage: {self._coreVoltage} -> {cVoltage}")
                 self._coreVoltage = updates.get("coreVoltage")
 
-            if new_fanspeed := updates.get("fanspeed"):
-                print(f"Updating frequency: {self._fanspeed} -> {new_fanspeed}")
+            if fanspeed := updates.get("fanspeed"):
+                print(f"Updating frequency: {self._fanspeed} -> {fanspeed}")
                 self._fanspeed = updates.get("fanspeed")
 
             print("Saving profile updates... ⏳")
