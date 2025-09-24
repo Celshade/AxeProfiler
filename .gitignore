@@ -5,7 +5,7 @@ venv/
 
 
 # root
-profiles/
+/.profiles/
 
 
 # other
