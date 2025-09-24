@@ -11,9 +11,10 @@ from profiles import Profile
 # AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
 
 
-def request(ip: str,
-            endpoint: str,
-            body: dict | None = None) -> requests.Response | None:
+def request(
+        ip: str,
+        endpoint: str,
+        body: dict[str, str | int] | None = None) -> requests.Response | None:
     """Make and return the proper request for the given IP addr and endpoint.
 
     See `./api.py` for the supported API routes and a link to the source
@@ -49,8 +50,11 @@ def request(ip: str,
                 raise requests.HTTPError(f"Status code: {res.status_code}")
             return res
         elif method == "PATCH" and endpoint == "system":
-            # return requests.patch(url)
-            raise NotImplementedError  # TODO Implement `body`
+            res = requests.patch(url, json=body, timeout=5)
+
+            if res.status_code != 200:
+                raise requests.HTTPError(f"Status code: {res.status_code}")
+            return res
         else:
             raise ValueError("Not a valid HTTP method for this API.")
     except ValueError as ve:
@@ -182,12 +186,33 @@ if __name__ == "__main__":
     print()
 
     # update profile
-    profile.update_profile({"fanspeed": 69})
+    profile.update_profile(
+        {"frequency": 525, "coreVoltage": 1150, "fanspeed": 99}
+    )
     print()
     time.sleep(3)
-    profile.update_profile({"profile_name": "test.CHANGED"})
+    profile.update_profile({"profile_name": "test2.CHANGED2"})
 
+    # push updated configs to device
+    push_data = {
+        k:profile.data[k] for k in profile.data
+        if k not in ("profile_name", "hostname")
+    }
+    # print(push_data)
+    res = request("192.168.0.2", "system", body=push_data)
+    print("system updated ✅"
+          if res.status_code == 200
+          else "failed to update ❌")
+    time.sleep(2)
     # restart
     print("restarted ✅"
           if request("192.168.0.2", "restart").status_code == 200
           else "Failed to restart the device ❌")
+
+    # Check new config
+    time.sleep(5)
+    config = get_current_config(ip=device_ip)
+    # create profile
+    profile = create_profile(config=config, profile_name=profile.name)
+    print(profile.data)
+    # TODO add await handling or give time between API calls
