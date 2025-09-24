@@ -135,10 +135,14 @@ class Profile():
             raise AttributeError("Profile could not be created 😭")
 
     def update_profile(self, updates: dict[str, str | int]) -> None:
-        """TODO
+        """Update the profile config and save the changes.
+
+        Only attrs used by `Profile` will be saved. Unlike
+        `cls.validate_profile_data()`, this method supports partial updates
+        to existing profiles and does not require every attr to be passed.
 
         Args:
-            config: A dict of config data to create the Profile from.
+            updates: A `dict` of config data to update the `Profile` with.
         """
         try:
             og_name = None  # Will retain the original name if name changes
