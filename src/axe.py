@@ -156,6 +156,7 @@ def load_profile(profile_name: str) -> Profile:
 
 
 if __name__ == "__main__":
+    # TODO remove testing
     device_ip = "192.168.0.2"  # input("Enter IP: ")  # NOTE testing IP only
     config = get_current_config(ip=device_ip)
     # create profile

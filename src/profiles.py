@@ -1,4 +1,4 @@
-from os import path, rename
+from os import path, rename, remove
 from typing import Self
 import json
 
@@ -191,7 +191,4 @@ class Profile():
             raise e
 
     def run_profile(self):
-        raise NotImplementedError
-
-    def delete_profile(self):
         raise NotImplementedError
