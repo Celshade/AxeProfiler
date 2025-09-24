@@ -16,6 +16,9 @@ def request(ip: str,
             body: dict | None = None) -> requests.Response | None:
     """Make and return the proper request for the given IP addr and endpoint.
 
+    See `./api.py` for the supported API routes and a link to the source
+    for the Bitaxe API.
+
     Args:
         ip: The IP of the [axe] device.
         endpoint: The desired AxeOS endpoint to hit.
@@ -33,16 +36,19 @@ def request(ip: str,
     try:
         method, url = API[endpoint]["type"], f"{HTTP}{ip}{API[endpoint]['url']}"
 
-        if method == "GET":
+        if method == "GET" and endpoint == "info":
             res = requests.get(url, timeout=5)
 
             if res.status_code != 200:
                 raise requests.HTTPError(f"Status code: {res.status_code}")
             return res
-        elif method == "POST":
-            raise NotImplementedError  # TODO Implement `body`
-            # return requests.post(url)
-        elif method == "PATCH":
+        elif method == "POST" and endpoint == "restart":
+            res = requests.post(url, timeout=5)
+
+            if res.status_code != 200:
+                raise requests.HTTPError(f"Status code: {res.status_code}")
+            return res
+        elif method == "PATCH" and endpoint == "system":
             # return requests.patch(url)
             raise NotImplementedError  # TODO Implement `body`
         else:
@@ -180,3 +186,8 @@ if __name__ == "__main__":
     print()
     time.sleep(3)
     profile.update_profile({"profile_name": "test.CHANGED"})
+
+    # restart
+    print("restarted ✅"
+          if request("192.168.0.2", "restart").status_code == 200
+          else "Failed to restart the device ❌")
