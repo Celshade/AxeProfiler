@@ -3,6 +3,7 @@
 
 HTTP = "http://"
 API = {
+    # NOTE: Valid route, but not yet used by this program
     "scan": {  # scan for available networks (not axes)
         "type": "GET",
         "url": "/api/system/wifi/scan"
@@ -11,6 +12,7 @@ API = {
         "type": "GET",
         "url": "/api/system/info"
     },
+    # NOTE: Valid route, but not yet used by this program
     "asic": {
         "type": "GET",
         "url": "/api/system/asic"
@@ -19,6 +21,7 @@ API = {
         "type": "GET",
         "url": "/api/system/statistics"
     },
+    # NOTE: Valid route, but not yet used by this program
     "dashboard": {
         "type": "GET",
         "url": "/api/system/statistics/dashboard"
@@ -31,13 +34,14 @@ API = {
         "type": "PATCH",
         "url": "/api/system"
     },
+    # NOTE: Valid route, but not yet used by this program
     "firmware": {  # NOTE: [requestBody] update firmware
         "type": "POST",
         "url": "/api/system/OTA"
     },
+    # NOTE: Valid route, but not yet used by this program
     "website": {  # NOTE: [requestBody] update website firmware
         "type": "POST",
         "url": "/api/system/OTAWWW"
     }
-
 }
