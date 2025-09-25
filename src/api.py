@@ -1,4 +1,23 @@
-# Source: ESP-Miner
+# AxeProfiler is a program designed to make saving/switching configurations for
+# bitcoin miner devices simpler and more efficient.
+
+# Copyright (C) 2025 [DC] Celshade <ggcelshade@gmail.com>
+
+# This file is part of AxeProfiler.
+
+# AxeProfiler is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+
+# AxeProfiler is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along with
+# AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
+# ---
+# The full API spec can be found at:
 # https://github.com/bitaxeorg/ESP-Miner/blob/master/main/http_server/openapi.yaml
 
 HTTP = "http://"
