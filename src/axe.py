@@ -23,71 +23,8 @@ import time  # TODO remove after testing
 
 import requests
 
-from api import HTTP, API
+from api import request
 from profiles import Profile
-
-# Response obj from AxeOS API GET /api/system/info
-# AXE_INFO_OBJ = dict[str, str | int | list[dict[str, str | int]]]
-
-
-def request(
-        ip: str,
-        endpoint: str,
-        body: dict[str, str | int] | None = None) -> requests.Response | None:
-    """Make and return the proper request for the given IP addr and endpoint.
-
-    See `./api.py` for the supported API routes and a link to the source
-    for the Bitaxe API.
-
-    Args:
-        ip: The IP of the [axe] device.
-        endpoint: The desired AxeOS endpoint to hit.
-        body: The body data to send with PATCH/POST requests (default=None).
-
-    Returns:
-        A response object else `None`
-    Raises:
-        ValueError: if an invalid HTTP method is specified for the endpoint.
-        requests.HTTPError: if an invalid path for the API is requested.
-        requests.ConnectionError: if the request takes too long or fails.
-        Exception: for any other request issues.
-    """
-
-    try:
-        method, url = API[endpoint]["type"], f"{HTTP}{ip}{API[endpoint]['url']}"
-
-        if method == "GET" and endpoint == "info":
-            res = requests.get(url, timeout=5)
-
-            if res.status_code != 200:
-                raise requests.HTTPError(f"Status code: {res.status_code}")
-            return res
-        elif method == "POST" and endpoint == "restart":
-            res = requests.post(url, timeout=5)
-
-            if res.status_code != 200:
-                raise requests.HTTPError(f"Status code: {res.status_code}")
-            return res
-        elif method == "PATCH" and endpoint == "system":
-            res = requests.patch(url, json=body, timeout=5)
-
-            if res.status_code != 200:
-                raise requests.HTTPError(f"Status code: {res.status_code}")
-            return res
-        else:
-            raise ValueError("Not a valid HTTP method for this API.")
-    except ValueError as ve:
-        print(f"{ve} for {method} {url}")
-        return None
-    except requests.HTTPError as httpe:
-        print(f"HTTP error: {httpe} for {method} {url}")
-        return None
-    except requests.ConnectionError as conne:
-        print(f"Timeout Error: {conne} for {method} {url}")
-        return None
-    except Exception as e:
-        print(f"Request error: {e} for {method} {url}")
-        return None
 
 
 def get_current_config(ip: str) -> dict[str, str] | None:
