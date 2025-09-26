@@ -28,8 +28,7 @@ def validate_profile(profile_name: str) -> bool:
 
 
 class Profile():
-    """A representation of a Profile able to be used by a miner running AxeOS.
-    """
+    """Representation of a device config used by a miner running AxeOS."""
     def __init__(self,
                  profile_name: str, hostname: str,
                  frequency: int, coreVoltage: int, fanspeed: int):
@@ -195,16 +194,17 @@ class Profile():
         except ValueError as ve:
             raise ve
 
-    def save_profile(self, replace_profile: str | None = None):
-        try:
-            if replace_profile and validate_profile(replace_profile):
-                existing_filename = f"./.profiles/{replace_profile}.json"
-                with open(existing_filename, 'w') as f:
-                    f.write(json.dumps(self.data, indent=4))
+    def save_profile(self, filepath: str) -> None:
+        """Saves the current profile data to a file.
 
-                # Rename the existing file
-                rename(existing_filename, f"./.profiles/{self.name}.json")
-            with open(f"./.profiles/{self.name}.json", 'w') as f:
+        Args:
+            filepath: The path to the file where the profile data will be saved.
+
+        Raises:
+            IOError: If there is an error writing to the specified file.
+        """
+        try:
+            with open(filepath, 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
             raise e
