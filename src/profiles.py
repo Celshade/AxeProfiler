@@ -1,7 +1,7 @@
 # AxeProfiler is a program designed to make saving/switching configurations for
 # bitcoin miner devices simpler and more efficient.
 
-# Copyright (C) 2023 [DC] Celshade <ggcelshade@gmail.com>
+# Copyright (C) 2025 [DC] Celshade <ggcelshade@gmail.com>
 
 # This file is part of AxeProfiler.
 
