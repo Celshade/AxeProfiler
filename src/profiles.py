@@ -19,7 +19,10 @@
 
 from os import path, rename, remove
 from typing import Self
+from time import sleep
 import json
+
+from api import request
 
 
 def validate_profile(profile_name: str) -> bool:
@@ -28,8 +31,7 @@ def validate_profile(profile_name: str) -> bool:
 
 
 class Profile():
-    """A representation of a Profile able to be used by a miner running AxeOS.
-    """
+    """Representation of a device config used by a miner running AxeOS."""
     def __init__(self,
                  profile_name: str, hostname: str,
                  frequency: int, coreVoltage: int, fanspeed: int):
@@ -165,35 +167,51 @@ class Profile():
         """
         try:
             og_name = None  # Will retain the original name if name changes
+            updated = False  # Flag to trigger saving
 
             # Reassign profile attrs if any are modified.
             print("Checking for profile updates... ⏳")
             if profile_name := updates.get("profile_name"):
-                print(f"Updating profile name: {self._name} -> {profile_name}")
-                og_name, self._name = self._name, profile_name
+                if profile_name != self.name:
+                    print("Updating profile name: "
+                          + f"{self.name} -> {profile_name}")
+                    og_name, self._name = self._name, profile_name
+                    updated = True
 
             if hostname := updates.get("hostname"):
-                print(f"Updating device name: {self._hostname} -> {hostname}")
-                self._hostname = hostname
+                if hostname != self.hostname:
+                    print("Updating device name: "
+                          + f"{self.hostname} -> {hostname}")
+                    self._hostname = hostname
+                    updated = True
 
             if frequency := updates.get("frequency"):
-                print(f"Updated frequency: {self._frequency} -> {frequency}")
-                self._frequency = frequency
+                if frequency != self.frequency:
+                    print("Updated frequency: "
+                          + f"{self.frequency} -> {frequency}")
+                    self._frequency = frequency
+                    updated = True
 
             if cVoltage := updates.get("coreVoltage"):
-                print(
-                    f"Updating coreVoltage: {self._coreVoltage} -> {cVoltage}")
-                self._coreVoltage = updates.get("coreVoltage")
+                if cVoltage != self.coreVoltage:
+                    print("Updating coreVoltage: "
+                        + f"{self.coreVoltage} -> {cVoltage}")
+                    self._coreVoltage = updates.get("coreVoltage")
+                    updated = True
 
             if fanspeed := updates.get("fanspeed"):
-                print(f"Updating frequency: {self._fanspeed} -> {fanspeed}")
-                self._fanspeed = updates.get("fanspeed")
+                if fanspeed != self.fanspeed:
+                    print(f"Updating frequency: {self.fanspeed} -> {fanspeed}")
+                    self._fanspeed = updates.get("fanspeed")
+                    updated = True
 
-            print("Saving profile updates... ⏳")
-            self.save_profile(replace_profile=og_name if og_name else None)
-
-        except ValueError as ve:
-            raise ve
+            if updated:
+                print("Saving profile updates... ⏳")
+                self.save_profile(replace_profile=og_name if og_name else None)
+            else:
+                print("Nothing to update")
+        except Exception as e:
+            raise e
 
     def save_profile(self, replace_profile: str | None = None):
         try:
@@ -209,5 +227,35 @@ class Profile():
         except Exception as e:
             raise e
 
-    def run_profile(self):
-        raise NotImplementedError
+    def run_profile(self, ip: str, update: bool = False) -> None:
+        """Apply profile settings to the device.
+
+        Sends the profile configuration to the device. If `update` is True, the
+        frequency, coreVoltage, and fanspeed settings are pushed to the device;
+        otherwise, the device is simply restarted.
+
+        Args:
+            ip: The IP address of the device to apply the profile to.
+            update: If True, update the device configuration (default=False).
+
+        Raises:
+            requests.HTTPError: If there is an error in the API requests.
+        """
+        try:
+            if update:
+                push_data = {
+                        k:self.data[k] for k in self.data
+                        if k not in ("profile_name", "hostname")
+                    }
+                # print(push_data)
+                res = request(ip=ip, endpoint="system", body=push_data)
+                sleep(3)
+            else:
+                res = request(ip=ip, endpoint="restart")
+
+            if update:
+                print("System updated ✅")
+            print("Device restarted ✅")
+        except Exception as e:
+            print("Error - could not run profile ⚠")
+            raise e
