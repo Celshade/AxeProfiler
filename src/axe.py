@@ -143,11 +143,13 @@ if __name__ == "__main__":
 
     # update profile
     profile.update_profile(
-        {"frequency": 525, "coreVoltage": 1150, "fanspeed": 99}
+        # {"frequency": 525, "coreVoltage": 1150, "fanspeed": 99}  # NOTE: test
+        {"frequency": 500, "coreVoltage": 1125, "fanspeed": 69}  # NOTE: test
     )
+    
+    # test profile name change (filename)
     print()
-    sleep(3)
-    profile.update_profile({"profile_name": "test2.CHANGED2"})
+    profile.update_profile({"profile_name": "test2.CHANGED3"})
 
     # push updated configs to device and restart
     profile.run_profile(ip="192.168.0.2", update=True)
@@ -156,6 +158,7 @@ if __name__ == "__main__":
     sleep(5)
     config = get_current_config(ip=device_ip)
     # create profile
+    print("Reloading saved profile to verify data... ⏳")
     profile = create_profile(config=config, profile_name=profile.name)
     print(profile.data)
     # TODO add await handling or give time between API calls
