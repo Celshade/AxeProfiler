@@ -19,7 +19,10 @@
 
 from os import path, rename, remove
 from typing import Self
+from time import sleep
 import json
+
+from api import request
 
 
 def validate_profile(profile_name: str) -> bool:
@@ -194,20 +197,49 @@ class Profile():
         except ValueError as ve:
             raise ve
 
-    def save_profile(self, filepath: str) -> None:
-        """Saves the current profile data to a file.
-
-        Args:
-            filepath: The path to the file where the profile data will be saved.
-
-        Raises:
-            IOError: If there is an error writing to the specified file.
-        """
+    def save_profile(self, replace_profile: str | None = None):
         try:
-            with open(filepath, 'w') as f:
+            if replace_profile and validate_profile(replace_profile):
+                existing_filename = f"./.profiles/{replace_profile}.json"
+                with open(existing_filename, 'w') as f:
+                    f.write(json.dumps(self.data, indent=4))
+
+                # Rename the existing file
+                rename(existing_filename, f"./.profiles/{self.name}.json")
+            with open(f"./.profiles/{self.name}.json", 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
             raise e
 
-    def run_profile(self):
-        raise NotImplementedError
+    def run_profile(self, ip: str, update: bool = False) -> None:
+        """Apply the profile settings to a device.
+
+        Sends the profile configuration to the device using the provided IP address.
+        If `update` is True, the frequency, coreVoltage, and fanspeed settings
+        are pushed to the device; otherwise, the device is simply restarted.
+
+        Args:
+            ip: The IP address of the device to apply the profile to.
+            update: If True, update the device configuration (default=False).
+
+        Raises:
+            Exception: If there is an error communicating with the device.
+        """
+        try:
+            if update:
+                push_data = {
+                        k:self.data[k] for k in self.data
+                        if k not in ("profile_name", "hostname")
+                    }
+                print(push_data)  # TODO remove
+                res = request(ip=ip, endpoint="system", body=push_data)
+                sleep(3)
+            else:
+                res = request(ip=ip, endpoint="restart")
+
+            if update:
+                print("System updated ✅")
+            print("Device restarted ✅")
+        except Exception as e:
+            print("Error - could not run profile ⚠")
+            raise e

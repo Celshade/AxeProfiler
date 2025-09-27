@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
+from time import sleep  # TODO remove after testing
 import json
 import os
-import time  # TODO remove after testing
 
 import requests
 
@@ -146,27 +146,14 @@ if __name__ == "__main__":
         {"frequency": 525, "coreVoltage": 1150, "fanspeed": 99}
     )
     print()
-    time.sleep(3)
+    sleep(3)
     profile.update_profile({"profile_name": "test2.CHANGED2"})
 
-    # push updated configs to device
-    push_data = {
-        k:profile.data[k] for k in profile.data
-        if k not in ("profile_name", "hostname")
-    }
-    # print(push_data)
-    res = request("192.168.0.2", "system", body=push_data)
-    print("system updated ✅"
-          if res.status_code == 200
-          else "failed to update ❌")
-    time.sleep(2)
-    # restart
-    print("restarted ✅"
-          if request("192.168.0.2", "restart").status_code == 200
-          else "Failed to restart the device ❌")
+    # push updated configs to device and restart
+    profile.run_profile(ip="192.168.0.2", update=True)
 
     # Check new config
-    time.sleep(5)
+    sleep(5)
     config = get_current_config(ip=device_ip)
     # create profile
     profile = create_profile(config=config, profile_name=profile.name)
