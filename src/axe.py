@@ -123,7 +123,8 @@ def load_profile(profile_name: str) -> Profile:
 
 if __name__ == "__main__":
     # TODO remove testing
-    device_ip = "192.168.0.2"  # input("Enter IP: ")  # NOTE testing IP only
+    # device_ip = "192.168.0.2"  # input("Enter IP: ")  # NOTE g1
+    device_ip = "192.168.0.7"  # input("Enter IP: ")  # NOTE s0
     config = get_current_config(ip=device_ip)
     # create profile
     profile = create_profile(config=config)
@@ -142,17 +143,19 @@ if __name__ == "__main__":
     print()
 
     # update profile
+    # TODO confirm if update (PATCH API) also resets by default?? seems to
     profile.update_profile(
-        # {"frequency": 525, "coreVoltage": 1150, "fanspeed": 99}  # NOTE: test
-        {"frequency": 500, "coreVoltage": 1125, "fanspeed": 69}  # NOTE: test
+        # {"frequency": 500, "coreVoltage": 1125, "fanspeed": 69}  # NOTE: g1
+        {"frequency": 750, "coreVoltage": 1250, "fanspeed": 99}  # NOTE: s0
     )
-    
+
     # test profile name change (filename)
     print()
     profile.update_profile({"profile_name": "test2.CHANGED3"})
 
     # push updated configs to device and restart
-    profile.run_profile(ip="192.168.0.2", update=True)
+    # profile.run_profile(ip="192.168.0.2", update=True)  # NOTE g1
+    profile.run_profile(ip="192.168.0.7", update=True)  # NOTE s0
 
     # Check new config
     sleep(5)
