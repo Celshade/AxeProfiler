@@ -17,18 +17,35 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
+from rich.prompt import Prompt
+
+
 class Cli():
-    def __init__(self):
-        raise NotImplementedError
+    # def __init__(self):
+    #     return self
 
     def menu(self):
         # TODO show copyright notice on menu start
-        # TODO show existing profiles
+        # TODO show existing profiles (e)
         # # TODO select/view profiles
-        # TODO create new profile
-        # TODO update profile
-        # TODO delete profile
-        # TODO run profile
+        # # # TODO separate/check by axe type (single-chip, multi-chip)
+        # TODO create new profile (n)
+        # TODO update profile (u)
+        # TODO delete profile (d)
+        # TODO run profile (r)
         # # TODO apply to multiple devices?
-        # TODO show this menu again
-        raise NotImplementedError
+        # TODO show this menu again (m)
+        # TODO quit (q)
+
+        # Handle user choice
+        user_choice = Prompt.ask("Select an option (not case sensitive): ",
+                                 choices=['E', 'N', 'U', 'D', 'R', 'M', 'Q'],
+                                 default='M',
+                                 case_sensitive=False)
+        print(user_choice)
+
+
+# NOTE: Testing
+if __name__ == "__main__":
+    cli = Cli()
+    cli.menu()
