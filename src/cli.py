@@ -30,7 +30,7 @@ class Cli():
         # TODO print the main menu
         # NOTE Add colors and letter codes
         rprint(Panel("[blue]Menu Option 1[/blue]\n[green]Menu Option 2[/green]",
-                    title="Main Menu"))
+                     title="Main Menu"))
 
     def main(self):
         # TODO show copyright notice on menu start
