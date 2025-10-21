@@ -18,13 +18,21 @@
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
 from rich.prompt import Prompt
+from rich.panel import Panel
+from rich import print as rprint
 
 
 class Cli():
-    # def __init__(self):
-    #     return self
+    def __init__(self):
+        return None
 
-    def menu(self):
+    def main_menu(self) -> None:
+        # TODO print the main menu
+        # NOTE Add colors and letter codes
+        rprint(Panel("[blue]Menu Option 1[/blue]\n[green]Menu Option 2[/green]",
+                    title="Main Menu"))
+
+    def main(self):
         # TODO show copyright notice on menu start
         # Handle user choice
         user_choice = Prompt.ask("Select an option (not case sensitive): ",
@@ -52,13 +60,14 @@ class Cli():
                 print(">>>Deleting profile")
             case 'm':
                 # TODO show this menu again (m)
-                print(">>>Menu")
+                self.main_menu()
             case 'q':
                 # TODO quit (q)
                 print(">>>Session Terminated")
 
 
+
 # NOTE: Testing
 if __name__ == "__main__":
     cli = Cli()
-    cli.menu()
+    cli.main()
