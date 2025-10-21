@@ -175,7 +175,7 @@ class Profile():
                 if profile_name != self.name:
                     print("Updating profile name: "
                           + f"{self.name} -> {profile_name}")
-                    og_name, self._name = self._name, profile_name
+                    og_name, self._name = self.name, profile_name
                     updated = True
 
             if hostname := updates.get("hostname"):
