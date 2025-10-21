@@ -26,23 +26,36 @@ class Cli():
 
     def menu(self):
         # TODO show copyright notice on menu start
-        # TODO show existing profiles (e)
-        # # TODO select/view profiles
-        # # # TODO separate/check by axe type (single-chip, multi-chip)
-        # TODO create new profile (n)
-        # TODO update profile (u)
-        # TODO delete profile (d)
-        # TODO run profile (r)
-        # # TODO apply to multiple devices?
-        # TODO show this menu again (m)
-        # TODO quit (q)
-
         # Handle user choice
         user_choice = Prompt.ask("Select an option (not case sensitive): ",
-                                 choices=['E', 'N', 'U', 'D', 'R', 'M', 'Q'],
+                                 choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
                                  default='M',
                                  case_sensitive=False)
         print(user_choice)
+        match user_choice.lower():
+            case 'l':
+                # TODO List existing profiles (L)
+                # # TODO separate/check by axe type (single-chip, multi-chip)
+                print(">>>Listing profiles")
+            case 'n':
+                # TODO new profile (n)
+                print(">>>Creating new profile")
+            case 'u':
+                # TODO update profile (u)
+                print(">>>Updating profile")
+            case 'r':
+                # TODO run profile (r)
+                # # NOTE apply to multiple devices?
+                print(">>>Running profile")
+            case 'd':
+                # TODO delete profile (d)
+                print(">>>Deleting profile")
+            case 'm':
+                # TODO show this menu again (m)
+                print(">>>Menu")
+            case 'q':
+                # TODO quit (q)
+                print(">>>Session Terminated")
 
 
 # NOTE: Testing
