@@ -19,22 +19,39 @@
 
 from rich.prompt import Prompt
 from rich.panel import Panel
+from rich.table import Table
 from rich import print as rprint
+from rich.console import Console
 
 
-class Cli():
+class Cli(Console):
     def __init__(self):
-        return None
+        super().__init__()  # Inherit console ability to print/etc objects
+
+    def _create_menu(self) -> None:
+        menu = Table(title="[cyan]Enter one of the following options")
+
+        menu.add_column("Option")
+        menu.add_column("Action")
+        menu.add_column("Description")
+
+        menu.add_row("[green]L", "List Available Profiles", None)
+        menu.add_row("[green]N", "Create a New Profile", "")
+        menu.add_row("[green]U", "Update a Profile", None)
+        menu.add_row("[green]R", "Run a Profile", None)
+        menu.add_row("[green]D", "Delete a Profile", None)
+        menu.add_row("[green]M", "Show the Main Menu", None)
+        return menu
 
     def main_menu(self) -> None:
-        # TODO print the main menu
-        # NOTE Add colors and letter codes
-        rprint(Panel("[blue]Menu Option 1[/blue]\n[green]Menu Option 2[/green]",
-                     title="Main Menu"))
+        menu = self._create_menu()
+        rprint(Panel(menu, title="[cyan]Main Menu"))
+
 
     def main(self):
         # TODO show copyright notice on menu start
         # Handle user choice
+        self.main_menu()
         user_choice = Prompt.ask("Select an option (not case sensitive): ",
                                  choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
                                  default='M',
