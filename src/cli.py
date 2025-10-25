@@ -21,10 +21,11 @@ from os import system
 from time import sleep
 
 from rich.prompt import Prompt
+from rich.prompt import Confirm
 from rich.panel import Panel
 from rich.table import Table
-from rich import print as rprint
 from rich.console import Console
+from rich import print as rprint
 
 
 class Cli(Console):
@@ -33,7 +34,12 @@ class Cli(Console):
 
     def show_notice(self) -> None:
         # TODO show copyright once on init
-        self.print("[magenta]<copyright notice line 1>\n[yellow]<Line 2>")
+        with open(".notice", 'r') as f:
+            notice = f.read()
+        self.print(Panel(notice, title="[bold bright_cyan]Copyright Notice",
+                         width=80))
+        sleep(4.2)
+
 
     def _create_menu(self) -> None:
         menu = Table(title="[green]Enter one of the following options",
@@ -49,13 +55,13 @@ class Cli(Console):
         menu.add_row("[bold green]D", "Delete an existing Profile")
         menu.add_row(
             "[bold bright_cyan]M[white] (default)", "Show this menu again")
-        menu.add_row("[bold red]Q", "Exit the program")
+        menu.add_row("[bold red]Q", "Quit the program")
         return menu
 
     def main_menu(self) -> None:
         system("clear")  # NOTE @Linux; handle MAC/Windows
         menu = self._create_menu()
-        rprint(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
+        self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
     def session(self) -> None:
         # Handle user choice
