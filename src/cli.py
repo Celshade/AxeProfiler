@@ -53,38 +53,37 @@ class Cli(Console):
         rprint(Panel(menu, title="[cyan]Main Menu", width=80))
 
 
-    def main(self):
+    def main(self) -> None:
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask("Select an option (not case sensitive): ",
                                  choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
                                  default='M',
                                  case_sensitive=False)
-        print(user_choice)
+        # print(user_choice)
         match user_choice.lower():
             case 'l':
                 # TODO List existing profiles (L)
                 # # TODO separate/check by axe type (single-chip, multi-chip)
-                print(">>>Listing profiles")
+                self.print(f"[green][{user_choice}][/] >>> Listing profiles")
             case 'n':
                 # TODO new profile (n)
-                print(">>>Creating new profile")
+                self.print(f"[green][{user_choice}][/] >>> Creating profile")
             case 'u':
                 # TODO update profile (u)
-                print(">>>Updating profile")
+                self.print(f"[green][{user_choice}][/] >>> Updating profile")
             case 'r':
                 # TODO run profile (r)
                 # # NOTE apply to multiple devices?
-                print(">>>Running profile")
+                self.print(f"[green][{user_choice}][/] >>> Running profile")
             case 'd':
                 # TODO delete profile (d)
-                print(">>>Deleting profile")
+                self.print(f"[green][{user_choice}][/] >>> Deleting profile")
             case 'm':
                 # TODO show this menu again (m)
                 self.main_menu()
             case 'q':
-                # TODO quit (q)
-                print(">>>Session Terminated")
+                self.print(f"[red][{user_choice}][/] >>> Session Terminated")
 
 
 
