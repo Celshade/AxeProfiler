@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import system, path
+from os import system, path, mkdir, listdir
 from time import sleep
 
 from rich.prompt import Prompt
@@ -30,6 +30,29 @@ from rich.text import Text
 class Cli(Console):
     def __init__(self):
         super().__init__()  # Inherit console ability to print/etc objects
+        self._profile_dir: str
+
+    @property
+    def profile_dir(self) -> str:
+        return self._profile_dir
+
+    @profile_dir.setter
+    def profile_dir(self, filepath) -> None:
+        raise NotImplementedError
+
+    @property
+    def num_profiles(self) -> int | None:
+        try:
+            # Create profiles dir if none exist  # TODO setup .config vars
+            if not path.isdir(self.profile_dir):
+                self.print("[green]No profiles found "
+                           + "[green]creating local profiles directory at .")
+                mkdir(".profiles/")
+                assert path.exists(".profiles/")
+
+            return len(listdir(self.profile_dir))
+        except AssertionError:
+            print("Failed to find or create a `profiles` dir 😢")
 
     def show_notice(self) -> None:
         try:
@@ -60,13 +83,14 @@ class Cli(Console):
                      width=76)
 
         # Add a row for each menu option
-        menu.add_row("[bold green]L", "List all of the available Profiles")
+        menu.add_row(f"[bold green]L [white]({self.num_profiles} found)",
+                     "List all of the available Profiles")
         menu.add_row("[bold green]N", "Create a new Profile")
         menu.add_row("[bold green]U", "Update an existing Profile")
         menu.add_row("[bold green]R", "Run an existing Profile")
         menu.add_row("[bold green]D", "Delete an existing Profile")
         menu.add_row(
-            "[bold bright_cyan]M[white] (default)", "Show this menu again")
+            "[bold bright_cyan]M [white](default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
 
         # Render the main menu
