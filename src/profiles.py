@@ -241,6 +241,8 @@ class Profile():
         Raises:
             requests.HTTPError: If there is an error in the API requests.
         """
+        # TODO check logic around push vs restart (push will also restart)
+          # Check when are we not pushing?
         try:
             if update:
                 push_data = {
@@ -249,13 +251,12 @@ class Profile():
                     }
                 # print(push_data)
                 res = request(ip=ip, endpoint="system", body=push_data)
+                print("System updated ✅")
                 sleep(3)
             else:
                 res = request(ip=ip, endpoint="restart")
+                print("Device restarted ✅")
 
-            if update:
-                print("System updated ✅")
-            print("Device restarted ✅")
         except Exception as e:
             print("Error - could not run profile ⚠")
             raise e
