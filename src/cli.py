@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
+from os import system
+from time import sleep
+
 from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.table import Table
@@ -30,60 +33,81 @@ class Cli(Console):
 
     def show_notice(self) -> None:
         # TODO show copyright once on init
-        raise NotImplementedError
+        self.print("[magenta]<copyright notice line 1>\n[yellow]<Line 2>")
 
     def _create_menu(self) -> None:
         menu = Table(title="[green]Enter one of the following options",
-                     width=80)
+                     width=76)
 
-        menu.add_column("Option", width=0)
-        menu.add_column("Description", width=6)
+        menu.add_column("Option")
+        menu.add_column("Description")
 
-        menu.add_row("[green]L", "List all of the available Profiles")
-        menu.add_row("[green]N", "Create a new Profile")
-        menu.add_row("[green]U", "Update an existing Profile")
-        menu.add_row("[green]R", "Run an existing Profile")
-        menu.add_row("[green]D", "Delete an existing Profile")
-        menu.add_row("[green]M[white] (default)", "Show this menu again")
-        menu.add_row("[red]Q", "Exit the program")
+        menu.add_row("[bold green]L", "List all of the available Profiles")
+        menu.add_row("[bold green]N", "Create a new Profile")
+        menu.add_row("[bold green]U", "Update an existing Profile")
+        menu.add_row("[bold green]R", "Run an existing Profile")
+        menu.add_row("[bold green]D", "Delete an existing Profile")
+        menu.add_row(
+            "[bold bright_cyan]M[white] (default)", "Show this menu again")
+        menu.add_row("[bold red]Q", "Exit the program")
         return menu
 
     def main_menu(self) -> None:
+        system("clear")  # NOTE @Linux; handle MAC/Windows
         menu = self._create_menu()
-        rprint(Panel(menu, title="[cyan]Main Menu", width=80))
+        rprint(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
-
-    def main(self) -> None:
+    def session(self) -> None:
         # Handle user choice
         self.main_menu()
-        user_choice = Prompt.ask("Select an option (not case sensitive): ",
-                                 choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
-                                 default='M',
-                                 case_sensitive=False)
-        # print(user_choice)
+        user_choice = Prompt.ask(
+            "Enter an option ([italics]not case sensitive[/]): ",
+            choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
+            default='M',
+            case_sensitive=False)
+
+        # Run session loop via recursion
         match user_choice.lower():
             case 'l':
                 # TODO List existing profiles (L)
                 # # TODO separate/check by axe type (single-chip, multi-chip)
                 self.print(f"[green][{user_choice}][/] >>> Listing profiles")
+                sleep(0.3)
+                self.session()
             case 'n':
                 # TODO new profile (n)
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
+                sleep(0.3)
+                self.session()
             case 'u':
                 # TODO update profile (u)
                 self.print(f"[green][{user_choice}][/] >>> Updating profile")
+                sleep(0.3)
+                self.session()
             case 'r':
                 # TODO run profile (r)
                 # # NOTE apply to multiple devices?
                 self.print(f"[green][{user_choice}][/] >>> Running profile")
+                sleep(0.3)
+                self.session()
             case 'd':
                 # TODO delete profile (d)
                 self.print(f"[green][{user_choice}][/] >>> Deleting profile")
+                sleep(0.3)
+                self.session()
             case 'm':
-                # TODO show this menu again (m)
-                self.main_menu()
+                self.print(
+                    f"[bright_cyan][{user_choice}][/] >>> Returning to menu")
+                sleep(0.3)
+                self.session()
             case 'q':
                 self.print(f"[red][{user_choice}][/] >>> Session Terminated")
+                return
+
+    def main(self) -> None:
+        self.show_notice()  # Shows the copyright at program start
+        # Run the session loop until user quits
+        self.session()
 
 
 
