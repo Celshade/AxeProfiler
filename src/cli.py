@@ -103,15 +103,3 @@ class Cli(Console):
             case 'q':
                 self.print(f"[red][{user_choice}][/] >>> Session Terminated")
                 return
-
-    def main(self) -> None:
-        self.show_notice()  # Shows the copyright at program start
-        # Run the session loop until user quits
-        self.session()
-
-
-
-# NOTE: Testing
-if __name__ == "__main__":
-    cli = Cli()
-    cli.main()
