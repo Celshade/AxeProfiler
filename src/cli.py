@@ -31,9 +31,10 @@ class Cli(Console):
         super().__init__()  # Inherit console ability to print/etc objects
 
     def show_notice(self) -> None:
-        # TODO show copyright once on init
         with open(".notice", 'r') as f:
             notice = f.read()
+
+        system("clear")  # NOTE @Linux; handle MAC/Windows
         self.print(Panel(notice, title="[bold bright_cyan]Copyright Notice",
                          width=80))
         sleep(4.2)
