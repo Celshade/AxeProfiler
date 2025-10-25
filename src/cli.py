@@ -28,28 +28,32 @@ class Cli(Console):
     def __init__(self):
         super().__init__()  # Inherit console ability to print/etc objects
 
+    def show_notice(self) -> None:
+        # TODO show copyright once on init
+        raise NotImplementedError
+
     def _create_menu(self) -> None:
-        menu = Table(title="[cyan]Enter one of the following options")
+        menu = Table(title="[green]Enter one of the following options",
+                     width=80)
 
-        menu.add_column("Option")
-        menu.add_column("Action")
-        menu.add_column("Description")
+        menu.add_column("Option", width=0)
+        menu.add_column("Description", width=6)
 
-        menu.add_row("[green]L", "List Available Profiles", None)
-        menu.add_row("[green]N", "Create a New Profile", "")
-        menu.add_row("[green]U", "Update a Profile", None)
-        menu.add_row("[green]R", "Run a Profile", None)
-        menu.add_row("[green]D", "Delete a Profile", None)
-        menu.add_row("[green]M", "Show the Main Menu", None)
+        menu.add_row("[green]L", "List all of the available Profiles")
+        menu.add_row("[green]N", "Create a new Profile")
+        menu.add_row("[green]U", "Update an existing Profile")
+        menu.add_row("[green]R", "Run an existing Profile")
+        menu.add_row("[green]D", "Delete an existing Profile")
+        menu.add_row("[green]M[white] (default)", "Show this menu again")
+        menu.add_row("[red]Q", "Exit the program")
         return menu
 
     def main_menu(self) -> None:
         menu = self._create_menu()
-        rprint(Panel(menu, title="[cyan]Main Menu"))
+        rprint(Panel(menu, title="[cyan]Main Menu", width=80))
 
 
     def main(self):
-        # TODO show copyright notice on menu start
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask("Select an option (not case sensitive): ",
