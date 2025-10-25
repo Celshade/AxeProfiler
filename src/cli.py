@@ -35,6 +35,7 @@ class Cli(Console):
         try:
             system("clear")  # NOTE @Linux; handle MAC/Windows
 
+            # raise FileNotFoundError  # TESTING
             assert path.exists(".notice")
             with open(".notice", 'r') as f:
                 notice = f.read()
@@ -43,8 +44,9 @@ class Cli(Console):
                             width=80))
             sleep(4.2)  # Let the user at least skim over the notice
         except FileNotFoundError:
-            msg = '\n'.join(("Could not render the [red]copyright[/] notice.",
-                            "Please see [red]COPYING[/] for more details."))
+            msg = ''.join(("Could not render the [red]copyright[/] notice.\n",
+                            "Please see line 4 of any source file or ",
+                            "[red]COPYING[/] for more details."))
             self.print(Panel(msg, title="[bold bright_cyan]Copyright Notice",
                             width=80))
             sleep(4.2)  # Let the user at least skim over the notice
