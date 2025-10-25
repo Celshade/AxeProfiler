@@ -17,13 +17,14 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import system
+from os import system, path
 from time import sleep
 
 from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.table import Table
 from rich.console import Console
+from rich.text import Text
 
 
 class Cli(Console):
@@ -31,13 +32,22 @@ class Cli(Console):
         super().__init__()  # Inherit console ability to print/etc objects
 
     def show_notice(self) -> None:
-        with open(".notice", 'r') as f:
-            notice = f.read()
+        try:
+            system("clear")  # NOTE @Linux; handle MAC/Windows
 
-        system("clear")  # NOTE @Linux; handle MAC/Windows
-        self.print(Panel(notice, title="[bold bright_cyan]Copyright Notice",
-                         width=80))
-        sleep(4.2)
+            assert path.exists(".notice")
+            with open(".notice", 'r') as f:
+                notice = f.read()
+
+            self.print(Panel(notice, title="[bold bright_cyan]Copyright Notice",
+                            width=80))
+            sleep(4.2)  # Let the user at least skim over the notice
+        except FileNotFoundError:
+            msg = '\n'.join(("Could not render the [red]copyright[/] notice.",
+                            "Please see [red]COPYING[/] for more details."))
+            self.print(Panel(msg, title="[bold bright_cyan]Copyright Notice",
+                            width=80))
+            sleep(4.2)  # Let the user at least skim over the notice
 
     def main_menu(self) -> None:
         system("clear")  # NOTE @Linux; handle MAC/Windows
