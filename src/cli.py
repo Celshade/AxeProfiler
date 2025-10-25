@@ -39,14 +39,15 @@ class Cli(Console):
                          width=80))
         sleep(4.2)
 
+    def main_menu(self) -> None:
+        system("clear")  # NOTE @Linux; handle MAC/Windows
 
-    def _create_menu(self) -> None:
-        menu = Table(title="[green]Enter one of the following options",
+        # Create the main menu as a table
+        menu = Table("Option", "Description",
+                     title="[green]Enter one of the following options",
                      width=76)
 
-        menu.add_column("Option")
-        menu.add_column("Description")
-
+        # Add a row for each menu option
         menu.add_row("[bold green]L", "List all of the available Profiles")
         menu.add_row("[bold green]N", "Create a new Profile")
         menu.add_row("[bold green]U", "Update an existing Profile")
@@ -55,11 +56,8 @@ class Cli(Console):
         menu.add_row(
             "[bold bright_cyan]M[white] (default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
-        return menu
 
-    def main_menu(self) -> None:
-        system("clear")  # NOTE @Linux; handle MAC/Windows
-        menu = self._create_menu()
+        # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
     def session(self) -> None:
