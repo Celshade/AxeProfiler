@@ -21,11 +21,9 @@ from os import system
 from time import sleep
 
 from rich.prompt import Prompt
-from rich.prompt import Confirm
 from rich.panel import Panel
 from rich.table import Table
 from rich.console import Console
-from rich import print as rprint
 
 
 class Cli(Console):
