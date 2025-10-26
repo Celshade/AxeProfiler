@@ -17,38 +17,59 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import system, path, mkdir, listdir
+import json
 from time import sleep
+from typing import TypeAlias
+from os import system, path, mkdir, listdir
 
-from rich.prompt import Prompt
+from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
+from rich.prompt import Prompt
 from rich.console import Console
-from rich.text import Text
+
+
+CONFIG: TypeAlias = dict[str, str | int]  # config obj format
 
 
 class Cli(Console):
-    def __init__(self):
-        super().__init__()  # Inherit console ability to print/etc objects
-        self._profile_dir: str
+    def __init__(self) -> None:
+        super().__init__()  # Inherit Console() ability to render/color
+        self._profile_dir: str | None
+
+        # Check for a profile_dir specified in the config file
+        try:
+            if path.exists(".config"):
+                with open(".config", 'r') as f:
+                    config: CONFIG = json.loads(f.read())
+
+                if profile_dir := config.get("profile_dir"):
+                    assert profile_dir and isinstance(profile_dir, str)
+                    self._profile_dir = profile_dir
+                    return
+        except AssertionError:
+            pass
+
+        # TODO implement/fix
+        # Check for or create local profile dir
+        msg = "[purple]Invalid profile directory found in [blue].config"
+        # Check for local profile dir (create if none)
+        if not self._profile_dir and path.isdir(self.profile_dir):
+            self.print("[green]No profiles found "
+                        + "[green]creating local profiles directory at .")
+            mkdir(".profiles/")
+            assert path.exists(".profiles/")
+
+
+
 
     @property
     def profile_dir(self) -> str:
         return self._profile_dir
 
-    @profile_dir.setter
-    def profile_dir(self, filepath) -> None:
-        raise NotImplementedError
-
     @property
     def num_profiles(self) -> int | None:
         try:
-            # Create profiles dir if none exist  # TODO setup .config vars
-            if not path.isdir(self.profile_dir):
-                self.print("[green]No profiles found "
-                           + "[green]creating local profiles directory at .")
-                mkdir(".profiles/")
-                assert path.exists(".profiles/")
 
             return len(listdir(self.profile_dir))
         except AssertionError:
