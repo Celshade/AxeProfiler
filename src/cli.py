@@ -18,6 +18,8 @@
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
 import json
+from math import ceil
+from time import sleep
 from time import sleep
 from typing import TypeAlias
 from os import system, path, mkdir, listdir
@@ -26,7 +28,7 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt
-from rich.console import Console
+from rich.console import Console, Group
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
@@ -66,6 +68,10 @@ class Cli(Console):
     @property
     def profile_dir(self) -> str:
         return self._profile_dir
+
+    @profile_dir.setter
+    def profile_dir(self, filepath) -> None:
+        raise NotImplementedError
 
     @property
     def num_profiles(self) -> int | None:
@@ -116,6 +122,18 @@ class Cli(Console):
 
         # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
+
+    def list_profiles(self) -> None:
+        """List all existing profiles.
+        """
+        pages = ceil(self.num_profiles / 10)  # NOTE only necessary if total exceeds screen space
+        # TODO find out how many profiles (tables) fit inside 80 width window
+          # TODO paginate based on this (assign vertical depth?)
+        # NOTE renders profiles as tables; columns allow for side by side tables
+        # render_profiles = Panel(Columns((test, test2)), title="All Tables", width=80)
+        # NOTE use Group in combo with Columns to create rows of profile tables at once
+
+        # TODO load profiles as objects and render data
 
     def session(self) -> None:
         # Handle user choice
