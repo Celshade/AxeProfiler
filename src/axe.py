@@ -19,11 +19,38 @@
 
 # from time import sleep  # TODO remove after testing
 import json
-import os
+from os import system, path, mkdir, listdir
+from time import sleep
+
+from rich.panel import Panel
+from rich import print as rprint
 
 from api import request
 from profiles import Profile
 from cli import Cli
+
+
+def show_notice() -> None:
+    try:
+        root = __file__.split('src')[0]
+        notice = f"{root}.notice"
+        copying = f"{root}COPYING"
+
+        with open(notice, 'r') as f:
+            notice = f.read()
+
+        system("clear")  # NOTE @Linux; handle MAC/Windows
+        rprint(Panel(f"{notice}[bold magenta]{copying}.",
+                     title="[bold bright_cyan]Copyright Notice",
+                     width=80))
+        sleep(2.2)  # Let the user at least skim over the notice
+    except FileNotFoundError:
+        msg = ''.join(("Could not render the [red]copyright[/] notice.\n",
+                        "Please see line 4 of any source file or ",
+                        f"[red]{copying}[/] for more details."))
+        rprint(Panel(msg, title="[bold bright_cyan]Copyright Notice",
+                        width=80))
+        sleep(2.2)  # Let the user at least skim over the notice
 
 
 def get_current_config(ip: str) -> dict[str, str] | None:
@@ -55,11 +82,11 @@ def check_for_profiles() -> None:
     """Check for an existing `profiles` dir and create one if needed.
     """
     try:
-        if not os.path.isdir("./.profiles"):
-            os.mkdir("./.profiles")
-            assert os.path.exists("./.profiles")
+        if not path.isdir("./.profiles"):
+            mkdir("./.profiles")
+            assert path.exists("./.profiles")
             print("No profiles dir found - creating local profiles dir at . ✅")
-        elif num_profiles := len(os.listdir("./.profiles")):
+        elif num_profiles := len(listdir("./.profiles")):
             # TODO enhance verification?
             print(f"{num_profiles} existing files found! ✅")
         else:
@@ -89,7 +116,7 @@ def create_profile(config: dict[str, str],
             }
         )
         profile.save_profile()
-        assert os.path.exists(f"./.profiles/{profile.name}.json")
+        assert path.exists(f"./.profiles/{profile.name}.json")
 
         print(f"Profile: {profile.name} created! ✅")
         return profile
@@ -166,6 +193,6 @@ if __name__ == "__main__":
     # # TODO add await handling or give time between API calls
 
     # Run the CLI
+    show_notice()
     cli = Cli()
-    cli.show_notice()
     cli.session()

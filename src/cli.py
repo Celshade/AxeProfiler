@@ -28,7 +28,9 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt
+from rich.columns import Columns
 from rich.console import Console, Group
+from rich.progress import Progress
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
@@ -37,69 +39,66 @@ CONFIG: TypeAlias = dict[str, str | int]  # config obj format
 class Cli(Console):
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
-        self._profile_dir: str | None
+        self.__root: str  = __file__.split("src")[0]  # program root
+        self.__config: str  = f"{self.__root}.config"  # program config
 
-        # Check for a profile_dir specified in the config file
-        try:
-            if path.exists(".config"):
-                with open(".config", 'r') as f:
-                    config: CONFIG = json.loads(f.read())
+        # Start progress bar
+        with Progress() as progress:
+            # Check for existing config or create one
+            config_task = progress.add_task("[blue]Validating config files...")
+            progress.update(config_task, advance=25)
+            if not path.exists(self.__config):
+                with open(self.__config, 'w') as f:
+                    f.write(json.dumps(
+                        {"profile_dir": f"{self.__root}.profiles/"},
+                        indent=4))
 
-                if profile_dir := config.get("profile_dir"):
-                    assert profile_dir and isinstance(profile_dir, str)
-                    self._profile_dir = profile_dir
-                    return
-        except AssertionError:
-            pass
+            # Read config
+            progress.update(config_task, advance=50)
+            with open(self.__config, 'r') as f:
+                config = json.loads(f.read())
+            progress.update(config_task, advance=25)
 
-        # TODO implement/fix
-        # Check for or create local profile dir
-        msg = "[purple]Invalid profile directory found in [blue].config"
-        # Check for local profile dir (create if none)
-        if not self._profile_dir and path.isdir(self.profile_dir):
-            self.print("[green]No profiles found "
-                        + "[green]creating local profiles directory at .")
-            mkdir(".profiles/")
-            assert path.exists(".profiles/")
+            profile_task = progress.add_task("[blue]Validating profiles...")
+            try:
+                # Verify integrity of profile_dir
+                profile_dir = config.get("profile_dir")
+                progress.update(profile_task, advance=30)
+                if not profile_dir:
+                    # Add default profile_dir to config
+                    with open(self.__config, 'w') as f:
+                        config["profile_dir"] = f"{self.__root}.profiles/"
+                        f.write(json.dumps(config, indent=4))
 
+                    # Make default profile_dir and assign class attr
+                    mkdir(self.__profile_dir)
+                    self.__profile_dir = config["profile_dir"]
+                else:
+                    assert profile_dir
+                    assert isinstance(profile_dir, str)
 
+                    # Ensure existing profile_dir
+                    if not path.exists(profile_dir):
+                        mkdir(profile_dir)
 
+                    self.__profile_dir = profile_dir  # assign class attr
+                progress.update(profile_task, advance=70)
+            except AssertionError:
+                msg = "[red]Invalid profile directory configuration"
+                self.print(msg)
+                raise AssertionError("**Program terminated**")  # Exit program
+
+        self.print("[blue]Starting program...")
+        sleep(1)  # Pause render before clearing
 
     @property
     def profile_dir(self) -> str:
-        return self._profile_dir
-
-    @profile_dir.setter
-    def profile_dir(self, filepath) -> None:
-        raise NotImplementedError
+        return self.__profile_dir
 
     @property
     def num_profiles(self) -> int | None:
-        try:
+        return len(listdir(self.profile_dir))
 
-            return len(listdir(self.profile_dir))
-        except AssertionError:
-            print("Failed to find or create a `profiles` dir 😢")
-
-    def show_notice(self) -> None:
-        try:
-            system("clear")  # NOTE @Linux; handle MAC/Windows
-
-            # raise FileNotFoundError  # TESTING
-            assert path.exists(".notice")
-            with open(".notice", 'r') as f:
-                notice = f.read()
-
-            self.print(Panel(notice, title="[bold bright_cyan]Copyright Notice",
-                            width=80))
-            sleep(4.2)  # Let the user at least skim over the notice
-        except FileNotFoundError:
-            msg = ''.join(("Could not render the [red]copyright[/] notice.\n",
-                            "Please see line 4 of any source file or ",
-                            "[red]COPYING[/] for more details."))
-            self.print(Panel(msg, title="[bold bright_cyan]Copyright Notice",
-                            width=80))
-            sleep(4.2)  # Let the user at least skim over the notice
 
     def main_menu(self) -> None:
         system("clear")  # NOTE @Linux; handle MAC/Windows
@@ -126,12 +125,15 @@ class Cli(Console):
     def list_profiles(self) -> None:
         """List all existing profiles.
         """
-        pages = ceil(self.num_profiles / 10)  # NOTE only necessary if total exceeds screen space
+        pages = ceil(self.num_profiles / 10)  # NOTE only if total > screen
         # TODO find out how many profiles (tables) fit inside 80 width window
           # TODO paginate based on this (assign vertical depth?)
+
         # NOTE renders profiles as tables; columns allow for side by side tables
-        # render_profiles = Panel(Columns((test, test2)), title="All Tables", width=80)
-        # NOTE use Group in combo with Columns to create rows of profile tables at once
+        # render_profiles = Panel(Columns((test, test2)),
+        #                         title="All Tables",
+        #                         width=80)
+        # NOTE use Group in combo with Columns to create rows of profile tables
 
         # TODO load profiles as objects and render data
 
@@ -181,3 +183,8 @@ class Cli(Console):
             case 'q':
                 self.print(f"[red][{user_choice}][/] >>> Session Terminated")
                 return
+
+
+if __name__ == "__main__":
+    # print(__file__.split("src")[0])
+    cli = Cli()
