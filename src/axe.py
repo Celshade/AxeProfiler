@@ -78,21 +78,21 @@ def get_current_config(ip: str) -> dict[str, str] | None:
     return profile_data
 
 
-def check_for_profiles() -> None:
-    """Check for an existing `profiles` dir and create one if needed.
-    """
-    try:
-        if not path.isdir("./.profiles"):
-            mkdir("./.profiles")
-            assert path.exists("./.profiles")
-            print("No profiles dir found - creating local profiles dir at . ✅")
-        elif num_profiles := len(listdir("./.profiles")):
-            # TODO enhance verification?
-            print(f"{num_profiles} existing files found! ✅")
-        else:
-            print("`Profiles` dir exists, but no profiles found 📂")
-    except AssertionError:
-        print("Failed to create a `profiles` dir 😢")
+# def check_for_profiles() -> None:
+#     """Check for an existing `profiles` dir and create one if needed.
+#     """
+#     try:
+#         if not path.isdir("./.profiles"):
+#             mkdir("./.profiles")
+#             assert path.exists("./.profiles")
+#             print("No profiles dir - creating local profiles dir at . ✅")
+#         elif num_profiles := len(listdir("./.profiles")):
+#             # TODO enhance verification?
+#             print(f"{num_profiles} existing files found! ✅")
+#         else:
+#             print("`Profiles` dir exists, but no profiles found 📂")
+#     except AssertionError:
+#         print("Failed to create a `profiles` dir 😢")
 
 
 def create_profile(config: dict[str, str],
@@ -106,7 +106,7 @@ def create_profile(config: dict[str, str],
         A `Profile` obj containing axe config data.
     """
     try:
-        check_for_profiles()
+        # check_for_profiles()
         profile = Profile.create_profile(
             {
                 "profile_name": profile_name or

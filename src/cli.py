@@ -32,6 +32,8 @@ from rich.columns import Columns
 from rich.console import Console, Group
 from rich.progress import Progress
 
+from profile import Profile
+
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
 
@@ -124,6 +126,26 @@ class Cli(Console):
 
         # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
+
+    def load_profile(self, profile_name: str) -> Profile:
+        """Load an existing profile.
+
+        Args:
+            profile_name: The name of the profile to load.
+        Returns:
+            A `Profile` obj containing axe config data.
+        Raises:
+            FileNotFoundError: if no file is found for the given name.
+        """
+        try:
+            self.print("[blue]Loading profiles... ⏳")
+            with open(f"{self.profile_dir}{profile_name}.json", 'r') as f:
+                return Profile.create_profile(json.loads(f.read()))
+
+        except FileNotFoundError:
+            self.print(f"[red]Could not find a profile named: {profile_name} ⚠")
+        except Exception as e:
+            print(e)
 
     def list_profiles(self) -> None:
         """List all existing profiles.
