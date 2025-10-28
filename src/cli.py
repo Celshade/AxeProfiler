@@ -91,6 +91,9 @@ class Cli(Console):
         self.print("[blue]Starting program...")
         sleep(1)  # Pause render before clearing
 
+    def __repr__(self):
+        return f"Cli()"
+
     @property
     def profile_dir(self) -> str:
         return self.__profile_dir

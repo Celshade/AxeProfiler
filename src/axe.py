@@ -19,15 +19,15 @@
 
 # from time import sleep  # TODO remove after testing
 import json
-from os import system, path, mkdir, listdir
 from time import sleep
+from os import system, path, mkdir, listdir
 
 from rich.panel import Panel
 from rich import print as rprint
 
+from cli import Cli
 from api import request
 from profiles import Profile
-from cli import Cli
 
 
 def show_notice() -> None:
