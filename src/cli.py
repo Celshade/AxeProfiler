@@ -32,7 +32,7 @@ from rich.columns import Columns
 from rich.console import Console, Group
 from rich.progress import Progress
 
-from profile import Profile
+from profiles import Profile
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
@@ -138,8 +138,7 @@ class Cli(Console):
             FileNotFoundError: if no file is found for the given name.
         """
         try:
-            self.print("[blue]Loading profiles... ⏳")
-            with open(f"{self.profile_dir}{profile_name}.json", 'r') as f:
+            with open(f"{self.profile_dir}{profile_name}", 'r') as f:
                 return Profile.create_profile(json.loads(f.read()))
 
         except FileNotFoundError:
@@ -150,14 +149,30 @@ class Cli(Console):
     def list_profiles(self) -> None:
         """List all existing profiles.
         """
-        pages = ceil(self.num_profiles / 10)  # NOTE only if total > screen
+        # pages = ceil(self.num_profiles / 10)  # NOTE only if total > screen
         # TODO find out how many profiles (tables) fit inside 80 width window
           # TODO paginate based on this (assign vertical depth?)
 
         # NOTE renders profiles as tables; columns allow for side by side tables
-        # render_profiles = Panel(Columns((test, test2)),
-        #                         title="All Tables",
-        #                         width=80)
+        # print(self.profile_dir)
+        self.print("[blue]Loading profiles... ⏳")
+        profile_names = listdir(self.profile_dir)
+        self.print(f"profiles: {profile_names}")  # [TESTING] TODO remove
+
+        test = self.load_profile(profile_names[0])
+        test = Table(test.__str__(), title=test.name, width=30)
+        test2 = self.load_profile(profile_names[1])
+        test2 = Table(test2.__str__(), title=test2.name, width=30)
+        render_profiles = Panel(Columns((test, test2)),
+                                title="All Tables",
+                                width=80)
+        self.print(render_profiles)
+        user_choice = Prompt.ask("Enter [Q] to quit [italics]not case sensitive",
+                                 choices=['Q'],
+                                 default='Q')
+        if user_choice.lower() == 'q':
+            return
+
         # NOTE use Group in combo with Columns to create rows of profile tables
 
         # TODO load profiles as objects and render data
@@ -178,6 +193,7 @@ class Cli(Console):
                 # # TODO separate/check by axe type (single-chip, multi-chip)
                 self.print(f"[green][{user_choice}][/] >>> Listing profiles")
                 sleep(0.3)
+                self.list_profiles()
                 self.session()
             case 'n':
                 # TODO new profile (n)
@@ -213,3 +229,4 @@ class Cli(Console):
 if __name__ == "__main__":
     # print(__file__.split("src")[0])
     cli = Cli()
+    cli.session()
