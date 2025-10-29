@@ -45,7 +45,7 @@ class Cli(Console):
         self.__config: str  = f"{self.__root}.config"  # program config
 
         # Start progress bar
-        with Progress() as progress:
+        with Progress() as progress:  # NOTE maybe remove increments - loads too fast
             # Check for existing config or create one
             config_task = progress.add_task("[blue]Validating config files...")
             progress.update(config_task, advance=25)
@@ -95,6 +95,10 @@ class Cli(Console):
 
     def __repr__(self):
         return f"Cli()"
+
+    def __str__(self) -> str:
+        # TODO implement
+        return ""
 
     @property
     def profile_dir(self) -> str:
