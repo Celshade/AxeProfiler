@@ -45,7 +45,7 @@ class Cli(Console):
         self.__config: str  = f"{self.__root}.config"  # program config
 
         # Start progress bar
-        with Progress() as progress:  # NOTE maybe remove increments - loads too fast
+        with Progress() as progress:  # NOTE remove increments? - loads too fast
             # Check for existing config or create one
             config_task = progress.add_task("[blue]Validating config files...")
             progress.update(config_task, advance=25)
@@ -53,7 +53,8 @@ class Cli(Console):
                 with open(self.__config, 'w') as f:
                     f.write(json.dumps(
                         {"profile_dir": f"{self.__root}.profiles/"},
-                        indent=4))
+                        indent=4)
+                    )
 
             # Read config
             progress.update(config_task, advance=50)
@@ -150,36 +151,51 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
-    def list_profiles(self) -> None:
+    def list_profiles(self, profiles: list[str] | None = None) -> None:
         """List all existing profiles.
+
+        Args:
+            profiles: An array of profile names.
         """
-        # pages = ceil(self.num_profiles / 10)  # NOTE only if total > screen
-        # TODO find out how many profiles (tables) fit inside 80 width window
-          # TODO paginate based on this (assign vertical depth?)
-
-        # NOTE renders profiles as tables; columns allow for side by side tables
-        # print(self.profile_dir)
+        # TODO add colors to profile names
+        # TODO next iteration, add filters
         self.print("[blue]Loading profiles... ⏳")
-        profile_names = listdir(self.profile_dir)
-        self.print(f"profiles: {profile_names}")  # [TESTING] TODO remove
 
-        test = self.load_profile(profile_names[0])
-        test = Table(test.__str__(), title=test.name, width=30)
-        test2 = self.load_profile(profile_names[1])
-        test2 = Table(test2.__str__(), title=test2.name, width=30)
-        render_profiles = Panel(Columns((test, test2)),
-                                title="All Tables",
-                                width=80)
-        self.print(render_profiles)
-        user_choice = Prompt.ask("Enter [Q] to quit [italics]not case sensitive",
-                                 choices=['Q'],
-                                 default='Q')
-        if user_choice.lower() == 'q':
-            return
+        _profiles = profiles or listdir(self.profile_dir)
+        self.print(f"profiles: {_profiles}")  # [TESTING] TODO remove
 
-        # NOTE use Group in combo with Columns to create rows of profile tables
+        # Turn each Profile() into a renderable Table()
+        # NOTE: max 2x2 (4) per page (width=37)
+        tables: list[Table] = []
+        for _profile in _profiles[:4]:
+            profile = self.load_profile(_profile)
+            tables.append(Table(profile.__str__(),
+                                title=profile.name, width=37))
 
-        # TODO load profiles as objects and render data
+        # Render the profiles
+        # NOTE We create rows by taking advantage of the display's built-in
+        # wrapping to our set width of 80 char. This allows us to avoid
+        # creating a Group() of Panel() of Columns()
+        self.print(Panel(Columns(tables),
+                         title="[bold cyan]All Tables", width=80))
+
+        msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
+
+        if self.num_profiles > 4:  # Add pagination prompt
+            msg += " or [green][P][/] to see more profiles"
+            user_choice = Prompt.ask(msg,
+                                    choices=['Q', 'P'],
+                                    case_sensitive=False,
+                                    default='P')
+        else:
+            user_choice = Prompt.ask(msg,
+                                    choices=['Q'],
+                                    case_sensitive=False,
+                                    default='Q')
+
+        # Use recursion to paginate as needed (4 per page)
+        if user_choice.lower() == 'p' and len(_profiles) > 4:
+            return self.list_profiles(_profiles[4:])
 
     def session(self) -> None:
         # Handle user choice
@@ -188,7 +204,8 @@ class Cli(Console):
             "Enter an option ([italics]not case sensitive[/]): ",
             choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
             default='M',
-            case_sensitive=False)
+            case_sensitive=False
+        )
 
         # Run session loop via recursion
         match user_choice.lower():
