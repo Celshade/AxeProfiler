@@ -92,7 +92,7 @@ class Cli(Console):
                 raise AssertionError("**Program terminated**")  # Exit program
 
         self.print("[blue]Starting program...")
-        sleep(1)  # Pause render before clearing
+        sleep(0.5)  # Pause render before clearing
 
     def __repr__(self):
         return f"Cli()"
@@ -212,7 +212,7 @@ class Cli(Console):
                                       num_rendered=num_rendered+4)
 
     def create_profile(self, config: dict[str, str],
-                    profile_name: str | None = None) -> Profile | None:
+                    profile_name: str = "default") -> Profile:
         """Create and save a profile for the given config.
 
         Args:
@@ -224,12 +224,12 @@ class Cli(Console):
         try:
             # check_for_profiles()
             profile = Profile.create_profile(
-                {"profile_name": profile_name or "default", **config}
+                {"profile_name": profile_name, **config}
             )
             profile.save_profile(profile_dir=self.profile_dir)
             assert path.exists(f"{self.profile_dir}{profile.name}.json")
 
-            self.print(f"Profile: {profile.name} created! ✅")
+            self.print(f"Profile [blue]{profile.name} created! 🍞")
             return profile
         except AssertionError:
             print("Error verifying profile was saved")
@@ -240,7 +240,7 @@ class Cli(Console):
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask(
-            "Enter an option ([italics]not case sensitive[/]): ",
+            "Enter an option ([italics]not case sensitive[/]):",
             choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
             default='M',
             case_sensitive=False
@@ -256,23 +256,25 @@ class Cli(Console):
                 self.session()
             case 'n':
                 # TODO new profile (n)
-                # self.print(f"[green][{user_choice}][/] >>> Creating profile")
+                self.print(f"[green][{user_choice}][/] >>> Creating profile")
                 # sleep(0.3)
                 self.create_profile(
                     config={
                         "hostname": Prompt.ask(
-                            "Enter [green]hostname[/] (Optional): ",
+                            "Enter [green]hostname[/] (Optional):",
                             default="Unknown"
                         ),
-                        "fanspeed": IPrompt.ask("Enter [green]fanspeed: ",
+                        "fanspeed": IPrompt.ask("Enter [green]fanspeed:",
                                                   default=100),
-                        "frequency": IPrompt.ask("Enter [green]frequency: ",
+                        "frequency": IPrompt.ask("Enter [green]frequency:",
                                                    default=575),
-                        "coreVoltage": IPrompt.ask("Enter [green]coreVoltage: ",
+                        "coreVoltage": IPrompt.ask("Enter [green]coreVoltage:",
                                                    default=1150)
                     },
-                    profile_name=Prompt.ask("Enter a [green]profile name[/]: ")
+                    profile_name=Prompt.ask("Enter a [green]profile name[/]:",
+                                            default="Default")
                 )
+                sleep(1.5)
                 self.session()
             case 'u':
                 # TODO update profile (u)
