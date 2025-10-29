@@ -19,10 +19,10 @@
 
 # from time import sleep  # TODO remove after testing
 import json
-from time import sleep
-from os import system, path, mkdir, listdir
+from os import system, path
 
 from rich.panel import Panel
+from rich.prompt import Confirm
 from rich import print as rprint
 
 from cli import Cli
@@ -43,14 +43,14 @@ def show_notice() -> None:
         rprint(Panel(f"{notice}[bold magenta]{copying}.",
                      title="[bold bright_cyan]Copyright Notice",
                      width=80))
-        sleep(2.2)  # Let the user at least skim over the notice
+        return Confirm.ask("Do you want to start the program?", default='y')
     except FileNotFoundError:
         msg = ''.join(("Could not render the [red]copyright[/] notice.\n",
                         "Please see line 4 of any source file or ",
                         f"[red]{copying}[/] for more details."))
         rprint(Panel(msg, title="[bold bright_cyan]Copyright Notice",
                         width=80))
-        sleep(2.2)  # Let the user at least skim over the notice
+        return Confirm.ask("Do you want to start the program?", default='y')
 
 
 def get_current_config(ip: str) -> dict[str, str] | None:
@@ -193,6 +193,7 @@ if __name__ == "__main__":
     # # TODO add await handling or give time between API calls
 
     # Run the CLI
-    show_notice()
-    cli = Cli()
-    cli.session()
+    start = show_notice()
+    if start:
+        cli = Cli()
+        cli.session()
