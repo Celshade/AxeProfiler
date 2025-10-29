@@ -151,8 +151,7 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
-    def list_profiles(self,
-                      profiles: list[str] | None = None,
+    def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0) -> None:
         """List all existing profiles.
 
@@ -201,15 +200,11 @@ class Cli(Console):
         msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
         if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
-            user_choice = Prompt.ask(msg,
-                                    choices=['Q', 'P'],
-                                    case_sensitive=False,
-                                    default='P')
+            user_choice = Prompt.ask(msg, choices=['Q', 'P'],
+                                    case_sensitive=False, default='P')
         else:
-            user_choice = Prompt.ask(msg,
-                                    choices=['Q'],
-                                    case_sensitive=False,
-                                    default='Q')
+            user_choice = Prompt.ask(msg, choices=['Q'],
+                                    case_sensitive=False, default='Q')
 
         # Use recursion to paginate as needed (4 per page)
         if user_choice.lower() == 'p' and len(_profiles) > 4:
