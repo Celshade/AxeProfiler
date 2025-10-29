@@ -106,7 +106,7 @@ class Cli(Console):
         return self.__profile_dir
 
     @property
-    def num_profiles(self) -> int | None:
+    def num_profiles(self) -> int:
         return len(listdir(self.profile_dir))
 
 
@@ -151,37 +151,55 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
-    def list_profiles(self, profiles: list[str] | None = None) -> None:
+    def list_profiles(self,
+                      profiles: list[str] | None = None,
+                      num_rendered: int = 0) -> None:
         """List all existing profiles.
 
         Args:
             profiles: An array of profile names.
+            num_rendered: The number of profiles rendered so far (default=0).
         """
-        # TODO add colors to profile names
         # TODO next iteration, add filters
         self.print("[blue]Loading profiles... ⏳")
 
-        _profiles = profiles or listdir(self.profile_dir)
-        self.print(f"profiles: {_profiles}")  # [TESTING] TODO remove
-
         # Turn each Profile() into a renderable Table()
         # NOTE: max 2x2 (4) per page (width=37)
+        _profiles = profiles or listdir(self.profile_dir)
+        # self.print(f"profiles: {_profiles}")  # [TESTING]
         tables: list[Table] = []
         for _profile in _profiles[:4]:
-            profile = self.load_profile(_profile)
+            profile: Profile = self.load_profile(_profile)
+            # Truncate text to match profile window size with room for options
+            title = Text(profile.name)
+            title.truncate(max_width=32, overflow="ellipsis")
             tables.append(Table(profile.__str__(),
-                                title=profile.name, width=37))
+                                title=f"[bold magenta]{title}", width=37))
+
+        # Get current screen totals
+        if len(_profiles) >=4:
+            if num_rendered == 0:
+                current = "1-4"
+            else:
+                current = f"{num_rendered + 1}-{num_rendered + 3}"
+        else:
+            if num_rendered == 0:
+                current = f"1-{len(_profiles)}"
+            else:
+                current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
+        total = self.num_profiles  # total profiles
 
         # Render the profiles
         # NOTE We create rows by taking advantage of the display's built-in
         # wrapping to our set width of 80 char. This allows us to avoid
         # creating a Group() of Panel() of Columns()
         self.print(Panel(Columns(tables),
-                         title="[bold cyan]All Tables", width=80))
+                         title=f"[bold cyan]Profiles ({current}/{total})",
+                         width=80))
 
+        # Handle user choice and menu navigation
         msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
-
-        if self.num_profiles > 4:  # Add pagination prompt
+        if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
             user_choice = Prompt.ask(msg,
                                     choices=['Q', 'P'],
@@ -195,7 +213,8 @@ class Cli(Console):
 
         # Use recursion to paginate as needed (4 per page)
         if user_choice.lower() == 'p' and len(_profiles) > 4:
-            return self.list_profiles(_profiles[4:])
+            return self.list_profiles(profiles=_profiles[4:],
+                                      num_rendered=num_rendered+4)
 
     def session(self) -> None:
         # Handle user choice
@@ -210,10 +229,9 @@ class Cli(Console):
         # Run session loop via recursion
         match user_choice.lower():
             case 'l':
-                # TODO List existing profiles (L)
                 # # TODO separate/check by axe type (single-chip, multi-chip)
-                self.print(f"[green][{user_choice}][/] >>> Listing profiles")
-                sleep(0.3)
+                # self.print(f"[green][{user_choice}][/] >>> Listing profiles")
+                # sleep(0.3)
                 self.list_profiles()
                 self.session()
             case 'n':
