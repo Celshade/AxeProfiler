@@ -213,16 +213,16 @@ class Profile():
         except Exception as e:
             raise e
 
-    def save_profile(self, replace_profile: str | None = None):
+    def save_profile(self, profile_dir: str, replace_profile: str | None = None):
         try:
             if replace_profile and validate_profile(replace_profile):
-                existing_filename = f"./.profiles/{replace_profile}.json"
+                existing_filename = f"{profile_dir}{replace_profile}.json"
                 with open(existing_filename, 'w') as f:
                     f.write(json.dumps(self.data, indent=4))
 
                 # Rename the existing file
-                rename(existing_filename, f"./.profiles/{self.name}.json")
-            with open(f"./.profiles/{self.name}.json", 'w') as f:
+                rename(existing_filename, f"{profile_dir}{self.name}.json")
+            with open(f"{profile_dir}{self.name}.json", 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
             raise e

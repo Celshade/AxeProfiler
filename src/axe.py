@@ -95,56 +95,56 @@ def get_current_config(ip: str) -> dict[str, str] | None:
 #         print("Failed to create a `profiles` dir 😢")
 
 
-def create_profile(config: dict[str, str],
-                   profile_name: str | None = None) -> Profile | None:
-    """Create and save a profile for the given config.
+# def create_profile(config: dict[str, str],
+#                    profile_name: str | None = None) -> Profile | None:
+#     """Create and save a profile for the given config.
 
-    Args:
-        config: The config data to save to the profile.
-        profile_name(optional): The profile name (default=None).
-    Returns:
-        A `Profile` obj containing axe config data.
-    """
-    try:
-        # check_for_profiles()
-        profile = Profile.create_profile(
-            {
-                "profile_name": profile_name or
-                    input("Enter a name for this profile: ") or
-                    "default",
-                **config
-            }
-        )
-        profile.save_profile()
-        assert path.exists(f"./.profiles/{profile.name}.json")
+#     Args:
+#         config: The config data to save to the profile.
+#         profile_name(optional): The profile name (default=None).
+#     Returns:
+#         A `Profile` obj containing axe config data.
+#     """
+#     try:
+#         # check_for_profiles()
+#         profile = Profile.create_profile(
+#             {
+#                 "profile_name": profile_name or
+#                     input("Enter a name for this profile: ") or
+#                     "default",
+#                 **config
+#             }
+#         )
+#         profile.save_profile()
+#         assert path.exists(f"./.profiles/{profile.name}.json")
 
-        print(f"Profile: {profile.name} created! ✅")
-        return profile
-    except AssertionError:
-        print("Error verifying profile was saved")
-    except Exception as e:
-        raise e
+#         print(f"Profile: {profile.name} created! ✅")
+#         return profile
+#     except AssertionError:
+#         print("Error verifying profile was saved")
+#     except Exception as e:
+#         raise e
 
 
-def load_profile(profile_name: str) -> Profile:
-    """Load an existing profile.
+# def load_profile(profile_name: str) -> Profile:
+#     """Load an existing profile.
 
-    Args:
-        profile_name: The name of the profile to load.
-    Returns:
-        A `Profile` obj containing axe config data.
-    Raises:
-        FileNotFoundError: if no file is found for the given name.
-    """
-    try:
-        print("Loading profile... ⏳")
-        with open(f"./.profiles/{profile_name}.json", 'r') as f:
-            return Profile.create_profile(json.loads(f.read()))
+#     Args:
+#         profile_name: The name of the profile to load.
+#     Returns:
+#         A `Profile` obj containing axe config data.
+#     Raises:
+#         FileNotFoundError: if no file is found for the given name.
+#     """
+#     try:
+#         print("Loading profile... ⏳")
+#         with open(f"./.profiles/{profile_name}.json", 'r') as f:
+#             return Profile.create_profile(json.loads(f.read()))
 
-    except FileNotFoundError:
-        print(f"Could not find a profile named: {profile_name} ⚠")
-    except Exception as e:
-        print(e)
+#     except FileNotFoundError:
+#         print(f"Could not find a profile named: {profile_name} ⚠")
+#     except Exception as e:
+#         print(e)
 
 
 if __name__ == "__main__":

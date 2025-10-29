@@ -27,7 +27,7 @@ from os import system, path, mkdir, listdir
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt
+from rich.prompt import Prompt, IntPrompt as IPrompt
 from rich.columns import Columns
 from rich.console import Console, Group
 from rich.progress import Progress
@@ -211,6 +211,31 @@ class Cli(Console):
             return self.list_profiles(profiles=_profiles[4:],
                                       num_rendered=num_rendered+4)
 
+    def create_profile(self, config: dict[str, str],
+                    profile_name: str | None = None) -> Profile | None:
+        """Create and save a profile for the given config.
+
+        Args:
+            config: The config data to save to the profile.
+            profile_name(optional): The profile name (default=None).
+        Returns:
+            A `Profile` obj containing axe config data.
+        """
+        try:
+            # check_for_profiles()
+            profile = Profile.create_profile(
+                {"profile_name": profile_name or "default", **config}
+            )
+            profile.save_profile(profile_dir=self.profile_dir)
+            assert path.exists(f"{self.profile_dir}{profile.name}.json")
+
+            self.print(f"Profile: {profile.name} created! ✅")
+            return profile
+        except AssertionError:
+            print("Error verifying profile was saved")
+        except Exception as e:
+            raise e
+
     def session(self) -> None:
         # Handle user choice
         self.main_menu()
@@ -231,8 +256,23 @@ class Cli(Console):
                 self.session()
             case 'n':
                 # TODO new profile (n)
-                self.print(f"[green][{user_choice}][/] >>> Creating profile")
-                sleep(0.3)
+                # self.print(f"[green][{user_choice}][/] >>> Creating profile")
+                # sleep(0.3)
+                self.create_profile(
+                    config={
+                        "hostname": Prompt.ask(
+                            "Enter [green]hostname[/] (Optional): ",
+                            default="Unknown"
+                        ),
+                        "fanspeed": IPrompt.ask("Enter [green]fanspeed: ",
+                                                  default=100),
+                        "frequency": IPrompt.ask("Enter [green]frequency: ",
+                                                   default=575),
+                        "coreVoltage": IPrompt.ask("Enter [green]coreVoltage: ",
+                                                   default=1150)
+                    },
+                    profile_name=Prompt.ask("Enter a [green]profile name[/]: ")
+                )
                 self.session()
             case 'u':
                 # TODO update profile (u)
