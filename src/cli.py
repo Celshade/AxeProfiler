@@ -180,12 +180,11 @@ class Cli(Console):
             if num_rendered == 0:
                 current = "1-4"
             else:
-                current = f"{num_rendered + 1}-{num_rendered + 3}"
-        else:
-            if num_rendered == 0:
+                current = f"{num_rendered + 1}-{num_rendered + 4}"
+        elif num_rendered == 0:
                 current = f"1-{len(_profiles)}"
-            else:
-                current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
+        else:
+            current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
         total = self.num_profiles  # total profiles
 
         # Render the profiles
