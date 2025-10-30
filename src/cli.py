@@ -210,21 +210,29 @@ class Cli(Console):
             return self.list_profiles(profiles=_profiles[4:],
                                       num_rendered=num_rendered+4)
 
-    def create_profile(self, config: dict[str, str],
-                    profile_name: str = "default") -> Profile:
+    def create_profile(self) -> Profile:
         """Create and save a profile for the given config.
 
-        Args:
-            config: The config data to save to the profile.
-            profile_name(optional): The profile name (default=None).
         Returns:
             A `Profile` obj containing axe config data.
         """
         try:
-            # check_for_profiles()
-            profile = Profile.create_profile(
-                {"profile_name": profile_name, **config}
-            )
+            # TODO Render text about defaults, axe types, etc
+            config = {
+                "profile_name": Prompt.ask("Enter a [green]profile name[/]:",
+                                        default="Default"),
+                "hostname": Prompt.ask(
+                    "Enter [green]hostname[/] (Optional):", default="Unknown"
+                ),
+                "fanspeed": IPrompt.ask("Enter [green]fanspeed:", default=100),
+                "frequency": IPrompt.ask("Enter [green]frequency:",
+                                         default=575),
+                "coreVoltage": IPrompt.ask("Enter [green]coreVoltage:",
+                                            default=1150)
+                }
+
+            # Return a Profile() and save the config file
+            profile = Profile.create_profile(config)
             profile.save_profile(profile_dir=self.profile_dir)
             assert path.exists(f"{self.profile_dir}{profile.name}.json")
 
@@ -257,22 +265,8 @@ class Cli(Console):
                 # TODO new profile (n)
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
                 # sleep(0.3)
-                self.create_profile(
-                    config={
-                        "hostname": Prompt.ask(
-                            "Enter [green]hostname[/] (Optional):",
-                            default="Unknown"
-                        ),
-                        "fanspeed": IPrompt.ask("Enter [green]fanspeed:",
-                                                  default=100),
-                        "frequency": IPrompt.ask("Enter [green]frequency:",
-                                                   default=575),
-                        "coreVoltage": IPrompt.ask("Enter [green]coreVoltage:",
-                                                   default=1150)
-                    },
-                    profile_name=Prompt.ask("Enter a [green]profile name[/]:",
-                                            default="Default")
-                )
+                # TODO Use the obj? Selection (default)?
+                self.create_profile()
                 sleep(1.5)
                 self.session()
             case 'u':
