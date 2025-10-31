@@ -256,12 +256,13 @@ class Cli(Console):
         """
         # TODO Render text about defaults, axe types, etc
         try:  # Prompt user for Profile config values
+            self.print(Rule("[bold cyan]Creating Profile"), width=80)
             self.print("Enter [red][!!][/] at any time to cancel")
             FLAG = "!!"  # escape hatch
 
             profile_name = Prompt.ask("Enter a [green]profile name[/]:",
                                       default="Default")
-            assert profile_name != FLAG  # Allows user to escape
+            assert profile_name != FLAG  # escape hatch
 
             hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
                                   default="Unknown")
@@ -269,7 +270,7 @@ class Cli(Console):
 
             frequency = self._validate_int_prompt("Enter [green]frequency[/]",
                                                   default=575, flag=FLAG)
-            assert frequency and isinstance(frequency, int)  # Allows user to escape
+            assert frequency and isinstance(frequency, int)  # escape hatch
 
             c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
                                                   default=1150, flag=FLAG)
