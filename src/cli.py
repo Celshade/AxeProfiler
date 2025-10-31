@@ -303,7 +303,8 @@ class Cli(Console):
             profile.save_profile(profile_dir=self.profile_dir)
             assert path.exists(f"{self.profile_dir}{profile.name}.json")
 
-            self.print(f"Profile [blue]{profile.name} created! 🍞")
+            self.print(f"\n[bold]Profile [blue]{profile.name}[/] created! 🍞")
+            sleep(1)
             return profile
         except AssertionError:
             print("Error verifying profile was saved")
@@ -320,12 +321,14 @@ class Cli(Console):
             self.print(f"This will [bold red]delete[/] profile: "
                        + f"[magenta]{profile.name}")
             # Have user confirm before deleting
-            user_choice = Confirm("[bold red]Do you wish to continue?")
+            user_choice: bool = Confirm.ask("[bold red]Do you wish to continue?",
+                                      default=False)
             if user_choice:
                 # Delete the config file
                 remove(f"{self.profile_dir}{profile.name}.json")
                 self.profile = None
                 self.print(f"[magenta]{profile.name} as been deleted")
+                sleep(1)
 
         except ValueError:
             self.print("No Profile is currently [green]selected")
@@ -359,7 +362,7 @@ class Cli(Console):
                 # sleep(0.3)
                 # TODO Use the obj? Selection (default)?
                 self.profile = self.create_profile()
-                sleep(1.5)
+                sleep(0.5)
                 self.session()
             case 'u':
                 # TODO update profile (u)
@@ -376,7 +379,7 @@ class Cli(Console):
                 # TODO delete profile (d)
                 self.print(f"[green][{user_choice}][/] >>> Deleting profile")
                 self.delete_profile(self.profile)
-                sleep(1.5)
+                sleep(0.5)
                 self.session()
             case 'm':
                 self.print(

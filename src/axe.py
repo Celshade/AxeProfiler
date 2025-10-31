@@ -19,7 +19,7 @@
 
 # from time import sleep  # TODO remove after testing
 import json
-from os import system, path
+from os import system
 
 from rich.panel import Panel
 from rich.prompt import Confirm
@@ -27,10 +27,9 @@ from rich import print as rprint
 
 from cli import Cli
 from api import request
-from profiles import Profile
 
 
-def show_notice() -> None:
+def show_notice() -> bool:
     try:
         root = __file__.split('src')[0]
         notice = f"{root}.notice"
