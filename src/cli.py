@@ -269,15 +269,15 @@ class Cli(Console):
 
             frequency = self._validate_int_prompt("Enter [green]frequency[/]",
                                                   default=575, flag=FLAG)
-            assert isinstance(frequency, int)  # Allows user to escape
+            assert frequency and isinstance(frequency, int)  # Allows user to escape
 
             c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
                                                   default=1150, flag=FLAG)
-            assert isinstance(c_voltage, int)
+            assert c_voltage and isinstance(c_voltage, int)
 
             fanspeed = self._validate_int_prompt("Enter [green]fanspeed[/]",
                                                  default=100, flag=FLAG)
-            assert isinstance(fanspeed, int)
+            assert fanspeed and isinstance(fanspeed, int)
 
         except AssertionError:
             self.print("[blue]Canceling profile creation... ⏳")
