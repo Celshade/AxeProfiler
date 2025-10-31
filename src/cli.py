@@ -18,16 +18,16 @@
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
 import json
-from math import ceil
 from time import sleep
 from time import sleep
 from typing import TypeAlias
 from os import system, path, mkdir, listdir
 
+from rich.rule import Rule
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt, IntPrompt as IPrompt
+from rich.prompt import Prompt
 from rich.columns import Columns
 from rich.console import Console, Group
 from rich.progress import Progress
