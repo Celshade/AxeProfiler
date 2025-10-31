@@ -29,8 +29,9 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.columns import Columns
 from rich.console import Console
-from rich.prompt import Prompt, Confirm
 from rich.progress import Progress
+from rich.prompt import Prompt, Confirm
+from requests.exceptions import ConnectTimeout
 
 from profiles import Profile
 
@@ -176,7 +177,7 @@ class Cli(Console):
             num_rendered: The number of profiles rendered so far (default=0).
         """
         # TODO next iteration, add filters
-        self.print("[blue]Loading profiles... ⏳")
+        self.print("[blue]Loading profiles...⏳")
 
         # Turn each Profile() into a renderable Table()
         # NOTE: max 2x2 (4) per page (width=37)
@@ -297,7 +298,7 @@ class Cli(Console):
             assert fanspeed and isinstance(fanspeed, int)
 
         except AssertionError:
-            self.print("[blue]Canceling profile creation... ⏳")
+            self.print("[blue]Canceling profile creation...⏳")
             return
 
         try: # Return a Profile() and save the config file
@@ -317,25 +318,63 @@ class Cli(Console):
         except Exception as e:
             raise e
 
+    def run_profile(self, profile: Profile) -> None:
+        self.print(Rule("[bold cyan]Running Profile"), width=80)
+        try:
+            if not profile:
+                raise ValueError
+
+            # Get IP
+            ip = Prompt.ask("Enter your target [green]IP address[/]",
+                            default=None)
+            if not ip or len(ip) < 4:  # shortest(?) IP format being abc.d
+                self.print(
+                    "[blue]Invalid IP address. Returning to main menu...⏳")
+                sleep(0.25)
+                return
+
+            # Confirm before appplying
+            user_choice = Confirm.ask(
+                f"[green bold]Apply[/] {self.profile.name} to {ip}?",
+                case_sensitive=False,
+                default=False)
+            if user_choice:
+                self.print(f"[blue]Applying {self.profile.name} to device...⏳")
+                self.profile.run_profile(ip)  # TODO: turn on update flag
+                self.print("Success! 🥳")
+                sleep(0.5)
+            else:
+                self.print("[blue]Returning to main menu...⏳")
+            sleep(0.25)
+
+        except ConnectTimeout:
+            self.print(f"[red]Error[/] connecting to [green]{ip}[/]. "
+                       + "Returning to main menu...⏳")
+            sleep(1)
+        except ValueError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
+
     def delete_profile(self, profile: Profile) -> None:
         try:
-            self.print(Rule("[bold blue cyan]Deleting Profile"), width=80)
+            self.print(Rule("[bold cyan]Deleting Profile"), width=80)
             if not profile:
                 raise ValueError
 
             # Warning message
             self.print(f"This will [bold red]delete[/] profile: "
                        + f"[magenta]{profile.name}")
-            # Have user confirm before deleting
+            # Confirm before deleting
             user_choice: bool = Confirm.ask(
                 "[bold red]Do you wish to continue?",
+                case_sensitive=False,
                 default=False
             )
             if user_choice:
                 # Delete the config file
                 remove(f"{self.profile_dir}{profile.name}.json")
                 self.profile = None
-                self.print(f"[magenta]{profile.name} as been deleted")
+                self.print(f"[blue]{profile.name} as been deleted")
                 sleep(1)
 
         except ValueError:
@@ -368,7 +407,6 @@ class Cli(Console):
             case 'n':
                 # TODO new profile (n)
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
-                # sleep(0.3)
                 # TODO Use the obj? Selection (default)?
                 self.profile = self.create_profile()
                 sleep(0.5)
@@ -382,7 +420,8 @@ class Cli(Console):
                 # TODO run profile (r)
                 # # NOTE apply to multiple devices?
                 self.print(f"[green][{user_choice}][/] >>> Running profile")
-                sleep(0.3)
+                self.run_profile(self.profile)
+                sleep(0.5)
                 self.session()
             case 'd':
                 # TODO delete profile (d)

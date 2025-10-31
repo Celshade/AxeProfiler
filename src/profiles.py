@@ -170,7 +170,7 @@ class Profile():
             updated = False  # Flag to trigger saving
 
             # Reassign profile attrs if any are modified.
-            print("Checking for profile updates... ⏳")
+            print("Checking for profile updates...⏳")
             if profile_name := updates.get("profile_name"):
                 if profile_name != self.name:
                     print("Updating profile name: "
@@ -206,7 +206,7 @@ class Profile():
                     updated = True
 
             if updated:
-                print("Saving profile updates... ⏳")
+                print("Saving profile updates...⏳")
                 self.save_profile(replace_profile=og_name if og_name else None)
             else:
                 print("Nothing to update")
@@ -243,20 +243,18 @@ class Profile():
         """
         # TODO check logic around push vs restart (push will also restart)
           # Check when are we not pushing?
-        try:
-            if update:
-                push_data = {
-                        k:self.data[k] for k in self.data
-                        if k not in ("profile_name", "hostname")
-                    }
-                # print(push_data)
-                res = request(ip=ip, endpoint="system", body=push_data)
-                print("System updated ✅")
-                sleep(3)
-            else:
-                res = request(ip=ip, endpoint="restart")
-                print("Device restarted ✅")
-
-        except Exception as e:
-            print("Error - could not run profile ⚠")
-            raise e
+        # try:
+        if update:
+            push_data = {
+                    k:self.data[k] for k in self.data
+                    if k not in ("profile_name", "hostname")
+                }
+            # print(push_data)
+            res = request(ip=ip, endpoint="system", body=push_data)
+            print("System updated ✅")
+        else:
+            res = request(ip=ip, endpoint="restart")
+            print("Device restarted ✅")
+        # except Exception as e:
+        #     print("Error - could not run profile ⚠")
+        #     raise e
