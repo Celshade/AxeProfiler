@@ -210,22 +210,45 @@ class Cli(Console):
             return self.list_profiles(profiles=_profiles[4:],
                                       num_rendered=num_rendered+4)
 
-    def _validate_int_prompt(self, prompt: str, default: int) -> int | bool:
-        """
+    def _validate_int_prompt(self, prompt: str,
+                             default: int, flag: str) -> int | bool:
+        """Validate `int` prompts while allowing for a `str` flag to interrupt.
+
+        Args:
+            prompt: The user prompt.
+            default: The default value if users enters nothing.
+            flag: The escape flag to interrupt the Profile() creation process.
+
+        Returns:
+            Returns an `int` if the user doesn't pass the `flag` else `False`
         """
         try:
-            user_choice = Prompt.ask(prompt, default=default, show_default=True)
-            if isinstance(user_choice, str) and user_choice.lower() == "!!":
+            assert isinstance(default, int)  # Ensure to avoid recursion issues
+
+            # Get user propmt and check for the escape flag
+            # NOTE: str(default) is required to render here for some reason
+            # NOTE: Rich will auto convert int values returned from ask()
+            user_choice = Prompt.ask(prompt, default=str(default))
+            if isinstance(user_choice, str) and user_choice.lower() == flag:
                 return False
+
+            # int() handles the default oddity mentioned above
             return int(user_choice)
 
         except ValueError:
             self.print("[red]Please enter a valid integer number")
-            self._validate_int_prompt(prompt, default)
+            # NOTE: must include the return here, lest you like recursion bugs
+            return self._validate_int_prompt(prompt, default, flag)
+        except AssertionError:
+            self.print("[red]arg: `default` value is not of type int")
+            return False
 
 
     def create_profile(self) -> Profile | None:
         """Create and save a profile for the given config.
+
+        Assertions are used in combination with a `FLAG` to give the user an
+        escape hatch mid-creation process.
 
         Returns:
             A `Profile` obj containing axe config data or `None` if the user
@@ -233,26 +256,28 @@ class Cli(Console):
         """
         # TODO Render text about defaults, axe types, etc
         try:  # Prompt user for Profile config values
-            self.print("Enter [red][!!][/] at any time to cancel")  # escape hatch
+            self.print("Enter [red][!!][/] at any time to cancel")
+            FLAG = "!!"  # escape hatch
+
             profile_name = Prompt.ask("Enter a [green]profile name[/]:",
                                       default="Default")
-            assert profile_name != "!!"  # Allows user to cancel at any time
+            assert profile_name != FLAG  # Allows user to escape
 
             hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
                                   default="Unknown")
-            assert hostname != "!!"
+            assert hostname != FLAG
 
-            frequency = self._validate_int_prompt("Enter [green]frequency:",
-                                                  default=575)
-            assert frequency
+            frequency = self._validate_int_prompt("Enter [green]frequency[/]",
+                                                  default=575, flag=FLAG)
+            assert isinstance(frequency, int)  # Allows user to escape
 
-            c_voltage = self._validate_int_prompt("Enter [green]coreVoltage:",
-                                                  default=1150)
-            assert c_voltage
+            c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
+                                                  default=1150, flag=FLAG)
+            assert isinstance(c_voltage, int)
 
-            fanspeed = self._validate_int_prompt("Enter [green]fanspeed:",
-                                                 default=100)
-            assert fanspeed
+            fanspeed = self._validate_int_prompt("Enter [green]fanspeed[/]",
+                                                 default=100, flag=FLAG)
+            assert isinstance(fanspeed, int)
 
         except AssertionError:
             self.print("[blue]Canceling profile creation... ⏳")
