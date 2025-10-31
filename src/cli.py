@@ -123,7 +123,7 @@ class Cli(Console):
                      "List all of the available Profiles")
         menu.add_row("[bold green]N", "Create a new Profile")
         menu.add_row("[bold green]U", "Update an existing Profile")
-        menu.add_row("[bold green]R", "Run an existing Profile")
+        menu.add_row("[bold green]R", "Run the selected Profile")
         menu.add_row("[bold green]D", "Delete an existing Profile")
         menu.add_row(
             "[bold bright_cyan]M [white](default)", "Show this menu again")
@@ -210,29 +210,60 @@ class Cli(Console):
             return self.list_profiles(profiles=_profiles[4:],
                                       num_rendered=num_rendered+4)
 
-    def create_profile(self) -> Profile:
+    def _validate_int_prompt(self, prompt: str, default: int) -> int | bool:
+        """
+        """
+        try:
+            user_choice = Prompt.ask(prompt, default=default, show_default=True)
+            if isinstance(user_choice, str) and user_choice.lower() == "!!":
+                return False
+            return int(user_choice)
+
+        except ValueError:
+            self.print("[red]Please enter a valid integer number")
+            self._validate_int_prompt(prompt, default)
+
+
+    def create_profile(self) -> Profile | None:
         """Create and save a profile for the given config.
 
         Returns:
-            A `Profile` obj containing axe config data.
+            A `Profile` obj containing axe config data or `None` if the user
+            enters a cancel command.
         """
-        try:
-            # TODO Render text about defaults, axe types, etc
-            config = {
-                "profile_name": Prompt.ask("Enter a [green]profile name[/]:",
-                                        default="Default"),
-                "hostname": Prompt.ask(
-                    "Enter [green]hostname[/] (Optional):", default="Unknown"
-                ),
-                "fanspeed": IPrompt.ask("Enter [green]fanspeed:", default=100),
-                "frequency": IPrompt.ask("Enter [green]frequency:",
-                                         default=575),
-                "coreVoltage": IPrompt.ask("Enter [green]coreVoltage:",
-                                            default=1150)
-                }
+        # TODO Render text about defaults, axe types, etc
+        try:  # Prompt user for Profile config values
+            self.print("Enter [red][!!][/] at any time to cancel")  # escape hatch
+            profile_name = Prompt.ask("Enter a [green]profile name[/]:",
+                                      default="Default")
+            assert profile_name != "!!"  # Allows user to cancel at any time
 
-            # Return a Profile() and save the config file
-            profile = Profile.create_profile(config)
+            hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
+                                  default="Unknown")
+            assert hostname != "!!"
+
+            frequency = self._validate_int_prompt("Enter [green]frequency:",
+                                                  default=575)
+            assert frequency
+
+            c_voltage = self._validate_int_prompt("Enter [green]coreVoltage:",
+                                                  default=1150)
+            assert c_voltage
+
+            fanspeed = self._validate_int_prompt("Enter [green]fanspeed:",
+                                                 default=100)
+            assert fanspeed
+
+        except AssertionError:
+            self.print("[blue]Canceling profile creation... ⏳")
+            return
+
+        try: # Return a Profile() and save the config file
+            profile = Profile.create_profile(
+                {"profile_name": profile_name, "hostname": hostname,
+                 "frequency": frequency, "coreVoltage": c_voltage,
+                 "fanspeed": fanspeed}
+            )
             profile.save_profile(profile_dir=self.profile_dir)
             assert path.exists(f"{self.profile_dir}{profile.name}.json")
 
@@ -257,7 +288,7 @@ class Cli(Console):
         match user_choice.lower():
             case 'l':
                 # # TODO separate/check by axe type (single-chip, multi-chip)
-                # self.print(f"[green][{user_choice}][/] >>> Listing profiles")
+                self.print(f"[green][{user_choice}][/] >>> Listing profiles")
                 # sleep(0.3)
                 self.list_profiles()
                 self.session()
