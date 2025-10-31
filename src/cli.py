@@ -130,9 +130,15 @@ class Cli(Console):
         menu.add_row(f"[bold green]L[/] ({self.num_profiles} found)",
                      "List all of the available Profiles")
         menu.add_row("[bold green]N", "Create a new Profile")
-        menu.add_row("[bold green]U", "Update an existing Profile")
-        menu.add_row("[bold green]R", "Run the selected Profile")
-        menu.add_row("[bold green]D", "Delete an existing Profile")
+        # Toggle selection indicators
+        if self.profile:
+            menu.add_row("[bold green]U[/] (✔)", "Update the selected Profile")
+            menu.add_row("[bold green]R[/] (✔)", "Run the selected Profile")
+            menu.add_row("[bold green]D[/] (✔)", "Delete an existing Profile")
+        else:
+            menu.add_row("[green]U", "Update the selected Profile")
+            menu.add_row("[green]R", "Run the selected Profile")
+            menu.add_row("[green]D", "Delete an existing Profile")
         menu.add_row(
             "[bold bright_cyan]M [white](default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
@@ -321,8 +327,10 @@ class Cli(Console):
             self.print(f"This will [bold red]delete[/] profile: "
                        + f"[magenta]{profile.name}")
             # Have user confirm before deleting
-            user_choice: bool = Confirm.ask("[bold red]Do you wish to continue?",
-                                      default=False)
+            user_choice: bool = Confirm.ask(
+                "[bold red]Do you wish to continue?",
+                default=False
+            )
             if user_choice:
                 # Delete the config file
                 remove(f"{self.profile_dir}{profile.name}.json")
@@ -332,6 +340,7 @@ class Cli(Console):
 
         except ValueError:
             self.print("No Profile is currently [green]selected")
+            sleep(0.25)
         except FileNotFoundError:
             self.print(f"Error finding profile: [magenta]{profile.name} 🤔")
         except Exception as e:
