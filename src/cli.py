@@ -21,15 +21,15 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir
+from os import system, path, mkdir, listdir, remove
 
 from rich.rule import Rule
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt
 from rich.columns import Columns
-from rich.console import Console, Group
+from rich.console import Console
+from rich.prompt import Prompt, Confirm
 from rich.progress import Progress
 
 from profiles import Profile
@@ -43,6 +43,7 @@ class Cli(Console):
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
         self.__config: str  = f"{self.__root}.config"  # program config
+        self._profile: Profile = None  # Currently selected Profile
 
         # Start progress bar
         with Progress() as progress:  # NOTE remove increments? - loads too fast
@@ -109,6 +110,13 @@ class Cli(Console):
     def num_profiles(self) -> int:
         return len(listdir(self.profile_dir))
 
+    @property
+    def profile(self) -> Profile:
+        return self._profile
+
+    @profile.setter
+    def profile(self, profile: Profile) -> None:
+        self._profile = profile
 
     def main_menu(self) -> None:
         system("clear")  # NOTE @Linux; handle MAC/Windows
@@ -119,7 +127,7 @@ class Cli(Console):
                      width=76)
 
         # Add a row for each menu option
-        menu.add_row(f"[bold green]L [white]({self.num_profiles} found)",
+        menu.add_row(f"[bold green]L[/] ({self.num_profiles} found)",
                      "List all of the available Profiles")
         menu.add_row("[bold green]N", "Create a new Profile")
         menu.add_row("[bold green]U", "Update an existing Profile")
@@ -128,6 +136,8 @@ class Cli(Console):
         menu.add_row(
             "[bold bright_cyan]M [white](default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
+        if self.profile:
+            menu.add_row("[bold magenta]S", f"{self.profile.name}")
 
         # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
@@ -300,6 +310,31 @@ class Cli(Console):
         except Exception as e:
             raise e
 
+    def delete_profile(self, profile: Profile) -> None:
+        try:
+            self.print(Rule("[bold blue cyan]Deleting Profile"), width=80)
+            if not profile:
+                raise ValueError
+
+            # Warning message
+            self.print(f"This will [bold red]delete[/] profile: "
+                       + f"[magenta]{profile.name}")
+            # Have user confirm before deleting
+            user_choice = Confirm("[bold red]Do you wish to continue?")
+            if user_choice:
+                # Delete the config file
+                remove(f"{self.profile_dir}{profile.name}.json")
+                self.profile = None
+                self.print(f"[magenta]{profile.name} as been deleted")
+
+        except ValueError:
+            self.print("No Profile is currently [green]selected")
+        except FileNotFoundError:
+            self.print(f"Error finding profile: [magenta]{profile.name} 🤔")
+        except Exception as e:
+            print(e)
+
+
     def session(self) -> None:
         # Handle user choice
         self.main_menu()
@@ -323,7 +358,7 @@ class Cli(Console):
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
                 # sleep(0.3)
                 # TODO Use the obj? Selection (default)?
-                self.create_profile()
+                self.profile = self.create_profile()
                 sleep(1.5)
                 self.session()
             case 'u':
@@ -340,7 +375,8 @@ class Cli(Console):
             case 'd':
                 # TODO delete profile (d)
                 self.print(f"[green][{user_choice}][/] >>> Deleting profile")
-                sleep(0.3)
+                self.delete_profile(self.profile)
+                sleep(1.5)
                 self.session()
             case 'm':
                 self.print(
