@@ -143,6 +143,7 @@ class Cli(Console):
         menu.add_row(
             "[bold bright_cyan]M [white](default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
+        # TODO add current selection as its own panel/table
         if self.profile:
             menu.add_row("[bold magenta]S", f"{self.profile.name}")
 
