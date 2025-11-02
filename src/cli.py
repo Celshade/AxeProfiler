@@ -194,20 +194,8 @@ class Cli(Console):
         else:
             self.print("[blue]Loading profiles...⏳")
 
-        # Turn each Profile() into a renderable Table()
-        # NOTE: max 2x2 (4) per page (width=37)
-        _profiles = profiles or listdir(self.profile_dir)
-        # self.print(f"profiles: {_profiles}")  # [TESTING]
-        tables: list[Table] = []
-        for _profile in _profiles[:4]:
-            profile: Profile = self.load_profile(_profile)
-            # Truncate text to match profile window size with room for options
-            title = Text(profile.name)
-            title.truncate(max_width=32, overflow="ellipsis")
-            tables.append(Table(profile.__str__(),
-                                title=f"[bold magenta]{title}", width=37))
-
         # Get current screen totals
+        _profiles = profiles or listdir(self.profile_dir)
         if len(_profiles) >=4:
             if num_rendered == 0:
                 current = "1-4"
@@ -218,6 +206,21 @@ class Cli(Console):
         else:
             current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
         total = self.num_profiles  # total profiles
+
+        # Turn each Profile() into a renderable Table()
+        # NOTE: max 2x2 (4) per page (width=37)
+        # self.print(f"profiles: {_profiles}")  # [TESTING]
+        _min, _max = [int(i) for i in current.split('-')]
+        choices = [*map(str, list(range(_min, _max+1)))]
+        tables: list[Table] = []
+        for num, _profile in zip(choices, _profiles[:4]):
+            profile: Profile = self.load_profile(_profile)
+            # Truncate text to match profile window size with room for options
+            title = Text(profile.name)
+            title.truncate(max_width=32, overflow="ellipsis")
+            tables.append(Table(profile.__str__(),
+                                title=f"[green][{num}] [bold magenta]{title}",
+                                width=37))
 
         # Render the profiles
         # NOTE We create rows by taking advantage of the display's built-in
@@ -231,12 +234,14 @@ class Cli(Console):
         msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
         if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
+            choices.extend(['P', 'Q'])
             user_choice = Prompt.ask(msg,
-                                     choices=['1', '2', '3', '4', 'Q', 'P'],
+                                     choices=choices,
                                      case_sensitive=False, default='P')
         else:
+            choices.append('Q')
             user_choice = Prompt.ask(msg,
-                                     choices=['1', '2', '3', '4', 'Q'],
+                                     choices=choices,
                                      case_sensitive=False, default='Q')
 
         # Use recursion to paginate as needed (4 per page)
