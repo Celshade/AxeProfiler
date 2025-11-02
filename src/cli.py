@@ -143,16 +143,18 @@ class Cli(Console):
             menu.add_row("[bold green]U", "Update the selected Profile")
             menu.add_row("[bold green]R", "Run the selected Profile")
             menu.add_row("[bold green]D", "Delete an existing Profile")
+
+            name = Text(self.profile.name)
+            name.truncate(max_width=15, overflow="ellipsis")
+            menu.add_row(f"[bold magenta]S [white]({name})",
+                         "Show selected Profile")
         else:
             menu.add_row("[grey]U", "Update the selected Profile")
             menu.add_row("[grey]R", "Run the selected Profile")
             menu.add_row("[grey]D", "Delete an existing Profile")
         menu.add_row(
-            "[bold bright_cyan]M [white](default)", "Show this menu again")
+            "[bold cyan]M[/] (default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
-        # TODO add current selection as its own panel/table
-        if self.profile:
-            menu.add_row("[bold magenta]S", f"{self.profile.name}")
 
         # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
@@ -397,7 +399,7 @@ class Cli(Console):
                 # Delete the config file
                 remove(f"{self.profile_dir}{profile.name}.json")
                 self.profile = None
-                self.print(f"[blue]{profile.name} as been deleted")
+                self.print(f"[blue]{profile.name} has been deleted")
                 sleep(1)
 
         except ValueError:
