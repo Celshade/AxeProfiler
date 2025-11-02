@@ -26,7 +26,6 @@ from rich.prompt import Confirm
 from rich import print as rprint
 
 from cli import Cli
-from api import request
 
 
 def show_notice() -> bool:
@@ -50,31 +49,6 @@ def show_notice() -> bool:
         rprint(Panel(msg, title="[bold bright_cyan]Copyright Notice",
                         width=80))
         return Confirm.ask("Do you want to start the program?", default='y')
-
-
-def get_current_config(ip: str) -> dict[str, str] | None:
-    """Get the current config from the device at the given IP.
-
-    Args:
-        ip: The IP of the [axe] device.
-    """
-    # Get existing freq/c.volt
-    data = request(ip, "info").json()
-
-    if not data:
-        print("Nothing returned from the request ❔")
-        return None
-
-    # pprint(data)
-    profile_data = {
-        key: data[key] for key in data.keys() & (
-            "hostname", "frequency", "coreVoltage", "fanspeed"
-        )
-    }
-    profile_data["IP"] = ip
-
-    # print(profile_data)  # TODO remove
-    return profile_data
 
 
 if __name__ == "__main__":

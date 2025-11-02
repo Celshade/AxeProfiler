@@ -359,13 +359,22 @@ class Cli(Console):
                 sleep(0.25)
                 return
 
+            # TODO render current config vs selected profile
+            print()
+            active_config = Profile.create_profile_from_active(ip)
+            active = Table(active_config.__str__(),
+                                 title="[bold magenta]Active", width=37)
+            selected = Table(profile.__str__(),
+                             title=f"[bold magenta]{profile.name}", width=37)
+            self.print(Columns([active, "[bold green]->", selected]))
+
             # Confirm before appplying
             user_choice = Confirm.ask(
-                f"Apply [bold magenta]{self.profile.name}[/] to {ip}?",
+                f"Apply [bold magenta]{profile.name}[/] to {ip}?",
                 case_sensitive=False,
                 default=False)
             if user_choice:
-                self.print(f"[blue]Applying {self.profile.name} to device...⏳")
+                self.print(f"[blue]Applying {profile.name} to device...⏳")
                 self.profile.run_profile(ip)
                 self.print("Success! 🥳")
                 sleep(0.5)

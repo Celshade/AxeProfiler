@@ -155,6 +155,17 @@ class Profile():
         except Exception:
             raise AttributeError("Profile could not be created 😭")
 
+    @classmethod
+    def create_profile_from_active(cls, ip: str) -> Self:
+        data = request(ip, "info").json()
+        profile_data = {"profile_name": "Active"}
+        profile_data.update({
+            key: data[key] for key in data.keys() & (
+                "hostname", "frequency", "coreVoltage", "fanspeed"
+            )
+        })
+        return cls.create_profile(profile_data)
+
     def update_profile(self, updates: dict[str, str | int]) -> None:
         """Update the profile config and save the changes.
 
@@ -246,6 +257,4 @@ class Profile():
             }
         # print(push_data)
         res = request(ip=ip, endpoint="system", body=push_data)
-        print("System updated ✅")
         res = request(ip=ip, endpoint="restart")
-        print("Device restarted ✅")
