@@ -140,13 +140,13 @@ class Cli(Console):
         menu.add_row("[bold green]N", "Create a new Profile")
         # Toggle selection indicators
         if self.profile:
-            menu.add_row("[bold green]U[/] (✔)", "Update the selected Profile")
-            menu.add_row("[bold green]R[/] (✔)", "Run the selected Profile")
-            menu.add_row("[bold green]D[/] (✔)", "Delete an existing Profile")
+            menu.add_row("[bold green]U", "Update the selected Profile")
+            menu.add_row("[bold green]R", "Run the selected Profile")
+            menu.add_row("[bold green]D", "Delete an existing Profile")
         else:
-            menu.add_row("[green]U", "Update the selected Profile")
-            menu.add_row("[green]R", "Run the selected Profile")
-            menu.add_row("[green]D", "Delete an existing Profile")
+            menu.add_row("[grey]U", "Update the selected Profile")
+            menu.add_row("[grey]R", "Run the selected Profile")
+            menu.add_row("[grey]D", "Delete an existing Profile")
         menu.add_row(
             "[bold bright_cyan]M [white](default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
