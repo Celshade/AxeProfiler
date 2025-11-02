@@ -325,7 +325,7 @@ class Cli(Console):
 
             # Render created profile
             new_profile = Table(profile.__str__(),
-                                title=f"[bold magenta]{profile.name}", width=37)
+                                title=f"[bold magenta]{profile.name}", width=50)
             print()
             self.print(new_profile)
             # Confirm before saving else create another profile
@@ -361,12 +361,12 @@ class Cli(Console):
 
             # Confirm before appplying
             user_choice = Confirm.ask(
-                f"[green bold]Apply[/] {self.profile.name} to {ip}?",
+                f"Apply [bold magenta]{self.profile.name}[/] to {ip}?",
                 case_sensitive=False,
                 default=False)
             if user_choice:
                 self.print(f"[blue]Applying {self.profile.name} to device...⏳")
-                self.profile.run_profile(ip)  # TODO: turn on update flag
+                self.profile.run_profile(ip)
                 self.print("Success! 🥳")
                 sleep(0.5)
             else:
@@ -419,7 +419,7 @@ class Cli(Console):
 
             # Render active profile
             profile_table = Table(profile.__str__(),
-                                title=f"[bold magenta]{profile.name}", width=37)
+                                title=f"[bold magenta]{profile.name}", width=50)
             self.print(profile_table)
             user_choice = Prompt.ask("Press [green][Enter][/] to continue",
                                      default="Enter")

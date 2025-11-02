@@ -213,7 +213,8 @@ class Profile():
         except Exception as e:
             raise e
 
-    def save_profile(self, profile_dir: str, replace_profile: str | None = None):
+    def save_profile(self,
+                     profile_dir: str, replace_profile: str | None = None):
         try:
             if replace_profile and validate_profile(replace_profile):
                 existing_filename = f"{profile_dir}{replace_profile}.json"
@@ -227,34 +228,24 @@ class Profile():
         except Exception as e:
             raise e
 
-    def run_profile(self, ip: str, update: bool = False) -> None:
+    def run_profile(self, ip: str) -> None:
         """Apply profile settings to the device.
 
-        Sends the profile configuration to the device. If `update` is True, the
-        frequency, coreVoltage, and fanspeed settings are pushed to the device;
-        otherwise, the device is simply restarted.
+        Sends the profile configuration and restarts the device.
 
         Args:
             ip: The IP address of the device to apply the profile to.
-            update: If True, update the device configuration (default=False).
 
         Raises:
             requests.HTTPError: If there is an error in the API requests.
         """
-        # TODO check logic around push vs restart (push will also restart)
-          # Check when are we not pushing?
         # try:
-        if update:
-            push_data = {
-                    k:self.data[k] for k in self.data
-                    if k not in ("profile_name", "hostname")
-                }
-            # print(push_data)
-            res = request(ip=ip, endpoint="system", body=push_data)
-            print("System updated ✅")
-        else:
-            res = request(ip=ip, endpoint="restart")
-            print("Device restarted ✅")
-        # except Exception as e:
-        #     print("Error - could not run profile ⚠")
-        #     raise e
+        push_data = {
+                k:self.data[k] for k in self.data
+                if k not in ("profile_name", "hostname")
+            }
+        # print(push_data)
+        res = request(ip=ip, endpoint="system", body=push_data)
+        print("System updated ✅")
+        res = request(ip=ip, endpoint="restart")
+        print("Device restarted ✅")

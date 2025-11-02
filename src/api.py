@@ -34,6 +34,7 @@ API = {
         "url": "/api/system/info"
     },
     # NOTE: Valid route, but not yet used by this program
+    # NOTE: As of 2025-11-01, this works for supra/gamma, but nerdQ++ json fails
     "asic": {
         "type": "GET",
         "url": "/api/system/asic"
