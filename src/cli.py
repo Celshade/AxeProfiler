@@ -180,15 +180,19 @@ class Cli(Console):
             print(e)
 
     def list_profiles(self, profiles: list[str] | None = None,
-                      num_rendered: int = 0) -> None:
+                      num_rendered: int = 0, first_page: bool = False) -> None:
         """List all existing profiles.
 
         Args:
             profiles: An array of profile names.
             num_rendered: The number of profiles rendered so far (default=0).
+            first_page: Toggle Rule() on first page load (default=False).
         """
         # TODO next iteration, add filters
-        self.print("[blue]Loading profiles...⏳")
+        if first_page:
+            self.print(Rule("[bold cyan]Listing Profiles"), width=80)
+        else:
+            self.print("[blue]Loading profiles...⏳")
 
         # Turn each Profile() into a renderable Table()
         # NOTE: max 2x2 (4) per page (width=37)
@@ -227,11 +231,13 @@ class Cli(Console):
         msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
         if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
-            user_choice = Prompt.ask(msg, choices=['Q', 'P'],
-                                    case_sensitive=False, default='P')
+            user_choice = Prompt.ask(msg,
+                                     choices=['1', '2', '3', '4', 'Q', 'P'],
+                                     case_sensitive=False, default='P')
         else:
-            user_choice = Prompt.ask(msg, choices=['Q'],
-                                    case_sensitive=False, default='Q')
+            user_choice = Prompt.ask(msg,
+                                     choices=['1', '2', '3', '4', 'Q'],
+                                     case_sensitive=False, default='Q')
 
         # Use recursion to paginate as needed (4 per page)
         if user_choice.lower() == 'p' and len(_profiles) > 4:
@@ -454,7 +460,7 @@ class Cli(Console):
                 # # TODO separate/check by axe type (single-chip, multi-chip)
                 self.print(f"[green][{user_choice}][/] >>> Listing profiles")
                 # sleep(0.3)
-                self.list_profiles()
+                self.list_profiles(first_page=True)
                 self.session()
             case 'n':
                 # TODO new profile (n)
