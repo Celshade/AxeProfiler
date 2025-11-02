@@ -411,13 +411,30 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
+    def show_profile(self, profile: Profile) -> None:
+        self.print(Rule("[bold cyan]Showing Profile"), width=80)
+        try:
+            if not profile:
+                raise ValueError
+
+            # Render active profile
+            profile_table = Table(profile.__str__(),
+                                title=f"[bold magenta]{profile.name}", width=37)
+            self.print(profile_table)
+            user_choice = Prompt.ask("Press [green][Enter][/] to continue",
+                                     default="Enter")
+            self.print("[blue]Returning to main menu...⏳")
+
+        except ValueError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
 
     def session(self) -> None:
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask(
             "Enter an option ([italics]not case sensitive[/]):",
-            choices=['L', 'N', 'U', 'R', 'D', 'M', 'Q'],
+            choices=['L', 'N', 'U', 'R', 'D', 'S', 'M', 'Q'],
             default='M',
             case_sensitive=False
         )
@@ -453,6 +470,12 @@ class Cli(Console):
                 # TODO delete profile (d)
                 self.print(f"[green][{user_choice}][/] >>> Deleting profile")
                 self.delete_profile(self.profile)
+                sleep(0.5)
+                self.session()
+            case 's':
+                # TODO delete profile (d)
+                self.print(f"[green][{user_choice}][/] >>> Showing profile")
+                self.show_profile(self.profile)
                 sleep(0.5)
                 self.session()
             case 'm':
