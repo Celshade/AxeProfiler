@@ -160,7 +160,7 @@ class Cli(Console):
         # Render the main menu
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
-    def load_profile(self, profile_name: str) -> Profile:
+    def _load_profile(self, profile_name: str) -> Profile:
         """Load an existing profile.
 
         Args:
@@ -189,6 +189,7 @@ class Cli(Console):
             first_page: Toggle Rule() on first page load (default=False).
         """
         # TODO next iteration, add filters
+        # TODO add full profile tracking for selection on any page
         if first_page:
             self.print(Rule("[bold cyan]Listing Profiles"), width=80)
         else:
@@ -214,7 +215,7 @@ class Cli(Console):
         choices = [*map(str, list(range(_min, _max+1)))]
         tables: dict[str, Table] = {}
         for num, _profile in zip(choices, _profiles[:4]):
-            profile: Profile = self.load_profile(_profile)
+            profile: Profile = self._load_profile(_profile)
             # Truncate text to match profile window size with room for options
             title = Text(profile.name)
             title.truncate(max_width=32, overflow="ellipsis")
