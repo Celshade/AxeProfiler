@@ -212,21 +212,25 @@ class Cli(Console):
         # self.print(f"profiles: {_profiles}")  # [TESTING]
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max+1)))]
-        tables: list[Table] = []
+        tables: dict[str, Table] = {}
         for num, _profile in zip(choices, _profiles[:4]):
             profile: Profile = self.load_profile(_profile)
             # Truncate text to match profile window size with room for options
             title = Text(profile.name)
             title.truncate(max_width=32, overflow="ellipsis")
-            tables.append(Table(profile.__str__(),
-                                title=f"[green][{num}] [bold magenta]{title}",
-                                width=37))
+            tables[num] = {
+                "profile": profile,
+                "table": Table(profile.__str__(),
+                               title=f"[green][{num}] [bold magenta]{title}",
+                               width=37)
+            }
+        # self.print(tables)  # Testing
 
         # Render the profiles
         # NOTE We create rows by taking advantage of the display's built-in
         # wrapping to our set width of 80 char. This allows us to avoid
         # creating a Group() of Panel() of Columns()
-        self.print(Panel(Columns(tables),
+        self.print(Panel(Columns((tables[data]["table"] for data in tables)),
                          title=f"[bold cyan]Profiles ({current}/{total})",
                          width=80))
 
@@ -234,18 +238,18 @@ class Cli(Console):
         msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
         if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
-            choices.extend(['P', 'Q'])
             user_choice = Prompt.ask(msg,
-                                     choices=choices,
+                                     choices=choices + ['P', 'Q'],
                                      case_sensitive=False, default='P')
         else:
-            choices.append('Q')
             user_choice = Prompt.ask(msg,
-                                     choices=choices,
+                                     choices=choices + ['Q'],
                                      case_sensitive=False, default='Q')
-
+        # Set the selected profile and return to main menu
+        if user_choice in choices:
+            self.profile = tables[user_choice]["profile"]
         # Use recursion to paginate as needed (4 per page)
-        if user_choice.lower() == 'p' and len(_profiles) > 4:
+        elif user_choice.lower() == 'p' and len(_profiles) > 4:
             return self.list_profiles(profiles=_profiles[4:],
                                       num_rendered=num_rendered+4)
 
