@@ -37,6 +37,13 @@ from profiles import Profile
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
+# Model defaults
+DEFAULTS = {
+    "Supra": {"frequency": 490, "core_voltage": 1166, "fanspeed": 90},
+    "Gamma": {"frequency": 525, "core_voltage": 1150, "fanspeed": 90},
+    "NerdQ++": {"frequency": 600, "core_voltage": 1150, "fanspeed": 90},
+    "NerdQX": {"frequency": "***", "core_voltage": "****", "fanspeed": "**"}
+}
 
 
 class Cli(Console):
@@ -261,7 +268,6 @@ class Cli(Console):
             self.print("[red]arg: `default` value is not of type int")
             return False
 
-
     def create_profile(self) -> Profile | None:
         """Create and save a profile for the given config.
 
@@ -272,28 +278,33 @@ class Cli(Console):
             A `Profile` obj containing axe config data or `None` if the user
             enters a cancel command.
         """
-        # TODO Render text about defaults, axe types, etc
-        try:  # Prompt user for Profile config values
+        try:
             self.print(Rule("[bold cyan]Creating Profile"), width=80)
-            self.print("Enter [red][!!][/] at any time to cancel")
+            # Render defaults for supra, gamma, nerd++
+            default_tables = []
+            for model in DEFAULTS:
+                default_tables.append(
+                    Table(json.dumps(DEFAULTS[model], indent=4),
+                          title=f"[bold magenta]{model}", width=37)
+                )
+            self.print(Panel(Columns(default_tables),
+                                     title="[bold cyan]Defaults", width=80))
+            self.print("[italic]Enter [red][!!][/] at any time to cancel\n")
             FLAG = "!!"  # escape hatch
 
+            # Get profile values
             profile_name = Prompt.ask("Enter a [green]profile name[/]:",
                                       default="Default")
             assert profile_name != FLAG  # escape hatch
-
             hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
                                   default="Unknown")
             assert hostname != FLAG
-
             frequency = self._validate_int_prompt("Enter [green]frequency[/]",
-                                                  default=575, flag=FLAG)
+                                                  default=550, flag=FLAG)
             assert frequency and isinstance(frequency, int)  # escape hatch
-
             c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
                                                   default=1150, flag=FLAG)
             assert c_voltage and isinstance(c_voltage, int)
-
             fanspeed = self._validate_int_prompt("Enter [green]fanspeed[/]",
                                                  default=100, flag=FLAG)
             assert fanspeed and isinstance(fanspeed, int)
@@ -308,6 +319,17 @@ class Cli(Console):
                  "frequency": frequency, "coreVoltage": c_voltage,
                  "fanspeed": fanspeed}
             )
+
+            # Render created profile
+            new_profile = Table(profile.__str__(),
+                                title=f"[bold magenta]{profile.name}", width=37)
+            print()
+            self.print(new_profile)
+            # Confirm before saving else create another profile
+            user_choice = Confirm.ask("[bold green]Create[/] this profile?")
+            if not user_choice:
+                return self.create_profile()
+
             profile.save_profile(profile_dir=self.profile_dir)
             assert path.exists(f"{self.profile_dir}{profile.name}.json")
 
