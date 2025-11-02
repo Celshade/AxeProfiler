@@ -1,7 +1,7 @@
 # AxeProfiler is a program designed to make saving/switching configurations for
 # bitcoin miner devices simpler and more efficient.
 
-# Copyright (C) 2023 [DC] Celshade <ggcelshade@gmail.com>
+# Copyright (C) 2025 [DC] Celshade <ggcelshade@gmail.com>
 
 # This file is part of AxeProfiler.
 
@@ -25,9 +25,9 @@ import json
 from api import request
 
 
-def validate_profile(profile_name: str) -> bool:
+def validate_profile(profile_dir: str, profile_name: str) -> bool:
     """Return True if the saved profile already exists else False."""
-    return path.exists(f"./.profiles/{profile_name}.json")
+    return path.exists(f"{profile_dir}{profile_name}.json")
 
 
 class Profile():
@@ -155,107 +155,108 @@ class Profile():
         except Exception:
             raise AttributeError("Profile could not be created 😭")
 
-    def update_profile(self, updates: dict[str, str | int]) -> None:
-        """Update the profile config and save the changes.
+    @classmethod
+    def create_profile_from_active(cls, ip: str) -> Self:
+        data = request(ip, "info").json()
+        profile_data = {"profile_name": "Active"}
+        profile_data.update({
+            key: data[key] for key in data.keys() & (
+                "hostname", "frequency", "coreVoltage", "fanspeed"
+            )
+        })
+        return cls.create_profile(profile_data)
 
-        Only attrs used by `Profile` will be saved. Unlike
-        `cls.validate_profile_data()`, this method supports partial updates
-        to existing profiles and does not require every attr to be passed.
+    # NOTE: Currently not needed due to handling in the CLI
+    # def update_profile(self, updates: dict[str, str | int]) -> None:
+    #     """Update the profile config and save the changes.
 
-        Args:
-            updates: A `dict` of config data to update the `Profile` with.
-        """
+    #     Only attrs used by `Profile` will be saved. Unlike
+    #     `cls.validate_profile_data()`, this method supports partial updates
+    #     to existing profiles and does not require every attr to be passed.
+
+    #     Args:
+    #         updates: A `dict` of config data to update the `Profile` with.
+    #     """
+    #     try:
+    #         og_name = None  # Will retain the original name if name changes
+    #         updated = False  # Flag to trigger saving
+
+    #         # Reassign profile attrs if any are modified.
+    #         print("Checking for profile updates...⏳")
+    #         if profile_name := updates.get("profile_name"):
+    #             if profile_name != self.name:
+    #                 print("Updating profile name: "
+    #                       + f"{self.name} -> {profile_name}")
+    #                 og_name, self._name = self.name, profile_name
+    #                 updated = True
+
+    #         if hostname := updates.get("hostname"):
+    #             if hostname != self.hostname:
+    #                 print("Updating device name: "
+    #                       + f"{self.hostname} -> {hostname}")
+    #                 self._hostname = hostname
+    #                 updated = True
+
+    #         if frequency := updates.get("frequency"):
+    #             if frequency != self.frequency:
+    #                 print("Updated frequency: "
+    #                       + f"{self.frequency} -> {frequency}")
+    #                 self._frequency = frequency
+    #                 updated = True
+
+    #         if cVoltage := updates.get("coreVoltage"):
+    #             if cVoltage != self.coreVoltage:
+    #                 print("Updating coreVoltage: "
+    #                     + f"{self.coreVoltage} -> {cVoltage}")
+    #                 self._coreVoltage = updates.get("coreVoltage")
+    #                 updated = True
+
+    #         if fanspeed := updates.get("fanspeed"):
+    #             if fanspeed != self.fanspeed:
+    #                 print(f"Updating frequency: {self.fanspeed} -> {fanspeed}")
+    #                 self._fanspeed = updates.get("fanspeed")
+    #                 updated = True
+
+    #         if updated:
+    #             print("Saving profile updates...⏳")
+    #             self.save_profile(replace_profile=og_name if og_name else None)
+    #         else:
+    #             print("Nothing to update")
+    #     except Exception as e:
+    #         raise e
+
+    def save_profile(self,
+                     profile_dir: str, replace: str | None = None):
         try:
-            og_name = None  # Will retain the original name if name changes
-            updated = False  # Flag to trigger saving
-
-            # Reassign profile attrs if any are modified.
-            print("Checking for profile updates... ⏳")
-            if profile_name := updates.get("profile_name"):
-                if profile_name != self.name:
-                    print("Updating profile name: "
-                          + f"{self.name} -> {profile_name}")
-                    og_name, self._name = self._name, profile_name
-                    updated = True
-
-            if hostname := updates.get("hostname"):
-                if hostname != self.hostname:
-                    print("Updating device name: "
-                          + f"{self.hostname} -> {hostname}")
-                    self._hostname = hostname
-                    updated = True
-
-            if frequency := updates.get("frequency"):
-                if frequency != self.frequency:
-                    print("Updated frequency: "
-                          + f"{self.frequency} -> {frequency}")
-                    self._frequency = frequency
-                    updated = True
-
-            if cVoltage := updates.get("coreVoltage"):
-                if cVoltage != self.coreVoltage:
-                    print("Updating coreVoltage: "
-                        + f"{self.coreVoltage} -> {cVoltage}")
-                    self._coreVoltage = updates.get("coreVoltage")
-                    updated = True
-
-            if fanspeed := updates.get("fanspeed"):
-                if fanspeed != self.fanspeed:
-                    print(f"Updating frequency: {self.fanspeed} -> {fanspeed}")
-                    self._fanspeed = updates.get("fanspeed")
-                    updated = True
-
-            if updated:
-                print("Saving profile updates... ⏳")
-                self.save_profile(replace_profile=og_name if og_name else None)
-            else:
-                print("Nothing to update")
-        except Exception as e:
-            raise e
-
-    def save_profile(self, replace_profile: str | None = None):
-        try:
-            if replace_profile and validate_profile(replace_profile):
-                existing_filename = f"./.profiles/{replace_profile}.json"
+            if replace and validate_profile(profile_dir=profile_dir,
+                                            profile_name=replace):
+                existing_filename = f"{profile_dir}{replace}.json"
                 with open(existing_filename, 'w') as f:
                     f.write(json.dumps(self.data, indent=4))
 
                 # Rename the existing file
-                rename(existing_filename, f"./.profiles/{self.name}.json")
-            with open(f"./.profiles/{self.name}.json", 'w') as f:
+                rename(existing_filename, f"{profile_dir}{self.name}.json")
+            with open(f"{profile_dir}{self.name}.json", 'w') as f:
                 f.write(json.dumps(self.data, indent=4))
         except Exception as e:
             raise e
 
-    def run_profile(self, ip: str, update: bool = False) -> None:
+    def run_profile(self, ip: str) -> None:
         """Apply profile settings to the device.
 
-        Sends the profile configuration to the device. If `update` is True, the
-        frequency, coreVoltage, and fanspeed settings are pushed to the device;
-        otherwise, the device is simply restarted.
+        Sends the profile configuration and restarts the device.
 
         Args:
             ip: The IP address of the device to apply the profile to.
-            update: If True, update the device configuration (default=False).
 
         Raises:
             requests.HTTPError: If there is an error in the API requests.
         """
-        try:
-            if update:
-                push_data = {
-                        k:self.data[k] for k in self.data
-                        if k not in ("profile_name", "hostname")
-                    }
-                # print(push_data)
-                res = request(ip=ip, endpoint="system", body=push_data)
-                sleep(3)
-            else:
-                res = request(ip=ip, endpoint="restart")
-
-            if update:
-                print("System updated ✅")
-            print("Device restarted ✅")
-        except Exception as e:
-            print("Error - could not run profile ⚠")
-            raise e
+        # try:
+        push_data = {
+                k:self.data[k] for k in self.data
+                if k not in ("profile_name", "hostname")
+            }
+        # print(push_data)
+        res = request(ip=ip, endpoint="system", body=push_data)
+        res = request(ip=ip, endpoint="restart")

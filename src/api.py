@@ -34,6 +34,7 @@ API = {
         "url": "/api/system/info"
     },
     # NOTE: Valid route, but not yet used by this program
+    # NOTE: As of 2025-11-01, this works for supra/gamma, but nerdQ++ json fails
     "asic": {
         "type": "GET",
         "url": "/api/system/asic"
@@ -115,14 +116,14 @@ def request(
         else:
             raise ValueError("Not a valid HTTP method for this API.")
     except ValueError as ve:
-        print(f"{ve} for {method} {url}")
-        return None
+        # print(f"{ve} for {method} {url}")
+        raise ve
     except requests.HTTPError as httpe:
-        print(f"HTTP error: {httpe} for {method} {url}")
-        return None
-    except requests.ConnectionError as conne:
-        print(f"Timeout Error: {conne} for {method} {url}")
-        return None
+        # print(f"HTTP error: {httpe} for {method} {url}")
+        raise httpe
+    except requests.ConnectTimeout as conne:
+        # print(f"Timeout Error: {conne} for {method} {url}")
+        raise conne
     except Exception as e:
-        print(f"Request error: {e} for {method} {url}")
-        return None
+        # print(f"Request error: {e} for {method} {url}")
+        raise e
