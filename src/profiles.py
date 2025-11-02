@@ -25,9 +25,9 @@ import json
 from api import request
 
 
-def validate_profile(profile_name: str) -> bool:
+def validate_profile(profile_dir: str, profile_name: str) -> bool:
     """Return True if the saved profile already exists else False."""
-    return path.exists(f"./.profiles/{profile_name}.json")
+    return path.exists(f"{profile_dir}{profile_name}.json")
 
 
 class Profile():
@@ -166,69 +166,71 @@ class Profile():
         })
         return cls.create_profile(profile_data)
 
-    def update_profile(self, updates: dict[str, str | int]) -> None:
-        """Update the profile config and save the changes.
+    # NOTE: Currently not needed due to handling in the CLI
+    # def update_profile(self, updates: dict[str, str | int]) -> None:
+    #     """Update the profile config and save the changes.
 
-        Only attrs used by `Profile` will be saved. Unlike
-        `cls.validate_profile_data()`, this method supports partial updates
-        to existing profiles and does not require every attr to be passed.
+    #     Only attrs used by `Profile` will be saved. Unlike
+    #     `cls.validate_profile_data()`, this method supports partial updates
+    #     to existing profiles and does not require every attr to be passed.
 
-        Args:
-            updates: A `dict` of config data to update the `Profile` with.
-        """
-        try:
-            og_name = None  # Will retain the original name if name changes
-            updated = False  # Flag to trigger saving
+    #     Args:
+    #         updates: A `dict` of config data to update the `Profile` with.
+    #     """
+    #     try:
+    #         og_name = None  # Will retain the original name if name changes
+    #         updated = False  # Flag to trigger saving
 
-            # Reassign profile attrs if any are modified.
-            print("Checking for profile updates...⏳")
-            if profile_name := updates.get("profile_name"):
-                if profile_name != self.name:
-                    print("Updating profile name: "
-                          + f"{self.name} -> {profile_name}")
-                    og_name, self._name = self.name, profile_name
-                    updated = True
+    #         # Reassign profile attrs if any are modified.
+    #         print("Checking for profile updates...⏳")
+    #         if profile_name := updates.get("profile_name"):
+    #             if profile_name != self.name:
+    #                 print("Updating profile name: "
+    #                       + f"{self.name} -> {profile_name}")
+    #                 og_name, self._name = self.name, profile_name
+    #                 updated = True
 
-            if hostname := updates.get("hostname"):
-                if hostname != self.hostname:
-                    print("Updating device name: "
-                          + f"{self.hostname} -> {hostname}")
-                    self._hostname = hostname
-                    updated = True
+    #         if hostname := updates.get("hostname"):
+    #             if hostname != self.hostname:
+    #                 print("Updating device name: "
+    #                       + f"{self.hostname} -> {hostname}")
+    #                 self._hostname = hostname
+    #                 updated = True
 
-            if frequency := updates.get("frequency"):
-                if frequency != self.frequency:
-                    print("Updated frequency: "
-                          + f"{self.frequency} -> {frequency}")
-                    self._frequency = frequency
-                    updated = True
+    #         if frequency := updates.get("frequency"):
+    #             if frequency != self.frequency:
+    #                 print("Updated frequency: "
+    #                       + f"{self.frequency} -> {frequency}")
+    #                 self._frequency = frequency
+    #                 updated = True
 
-            if cVoltage := updates.get("coreVoltage"):
-                if cVoltage != self.coreVoltage:
-                    print("Updating coreVoltage: "
-                        + f"{self.coreVoltage} -> {cVoltage}")
-                    self._coreVoltage = updates.get("coreVoltage")
-                    updated = True
+    #         if cVoltage := updates.get("coreVoltage"):
+    #             if cVoltage != self.coreVoltage:
+    #                 print("Updating coreVoltage: "
+    #                     + f"{self.coreVoltage} -> {cVoltage}")
+    #                 self._coreVoltage = updates.get("coreVoltage")
+    #                 updated = True
 
-            if fanspeed := updates.get("fanspeed"):
-                if fanspeed != self.fanspeed:
-                    print(f"Updating frequency: {self.fanspeed} -> {fanspeed}")
-                    self._fanspeed = updates.get("fanspeed")
-                    updated = True
+    #         if fanspeed := updates.get("fanspeed"):
+    #             if fanspeed != self.fanspeed:
+    #                 print(f"Updating frequency: {self.fanspeed} -> {fanspeed}")
+    #                 self._fanspeed = updates.get("fanspeed")
+    #                 updated = True
 
-            if updated:
-                print("Saving profile updates...⏳")
-                self.save_profile(replace_profile=og_name if og_name else None)
-            else:
-                print("Nothing to update")
-        except Exception as e:
-            raise e
+    #         if updated:
+    #             print("Saving profile updates...⏳")
+    #             self.save_profile(replace_profile=og_name if og_name else None)
+    #         else:
+    #             print("Nothing to update")
+    #     except Exception as e:
+    #         raise e
 
     def save_profile(self,
-                     profile_dir: str, replace_profile: str | None = None):
+                     profile_dir: str, replace: str | None = None):
         try:
-            if replace_profile and validate_profile(replace_profile):
-                existing_filename = f"{profile_dir}{replace_profile}.json"
+            if replace and validate_profile(profile_dir=profile_dir,
+                                            profile_name=replace):
+                existing_filename = f"{profile_dir}{replace}.json"
                 with open(existing_filename, 'w') as f:
                     f.write(json.dumps(self.data, indent=4))
 

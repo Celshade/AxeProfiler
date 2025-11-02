@@ -210,7 +210,6 @@ class Cli(Console):
 
         # Turn each Profile() into a renderable Table()
         # NOTE: max 2x2 (4) per page (width=37)
-        # self.print(f"profiles: {_profiles}")  # [TESTING]
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max+1)))]
         tables: dict[str, Table] = {}
@@ -287,6 +286,43 @@ class Cli(Console):
             self.print("[red]arg: `default` value is not of type int")
             return False
 
+    def _get_profile_config(self, retain_name: str = None) -> CONFIG:
+        self.print("[italic]Enter [red][!!][/] at any time to cancel\n")
+        FLAG = "!!"  # escape hatch
+
+        # Get profile values
+        profile_name = Prompt.ask("Enter a [green]profile name[/]:",
+                                    default=retain_name or "Default")
+        assert profile_name != FLAG  # escape hatch
+        hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
+                                default="Unknown")
+        assert hostname != FLAG
+        frequency = self._validate_int_prompt("Enter [green]frequency[/]",
+                                                default=550, flag=FLAG)
+        assert frequency and isinstance(frequency, int)  # escape hatch
+        c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
+                                                default=1150, flag=FLAG)
+        assert c_voltage and isinstance(c_voltage, int)
+        fanspeed = self._validate_int_prompt("Enter [green]fanspeed[/]",
+                                                default=100, flag=FLAG)
+        assert fanspeed and isinstance(fanspeed, int)
+
+        return {"profile_name": profile_name, "hostname": hostname,
+                "frequency": frequency, "coreVoltage": c_voltage,
+                "fanspeed": fanspeed}
+
+
+    def _render_defaults(self) -> None:
+        # Render defaults for supra, gamma, nerd++
+        default_tables = []
+        for model in DEFAULTS:
+            default_tables.append(
+                Table(json.dumps(DEFAULTS[model], indent=4),
+                        title=f"[bold magenta]{model}", width=37)
+            )
+        self.print(Panel(Columns(default_tables),
+                                    title="[bold cyan]Defaults", width=80))
+
     def create_profile(self) -> Profile | None:
         """Create and save a profile for the given config.
 
@@ -297,48 +333,16 @@ class Cli(Console):
             A `Profile` obj containing axe config data or `None` if the user
             enters a cancel command.
         """
+        self.print(Rule("[bold cyan]Creating Profile"), width=80)
         try:
-            self.print(Rule("[bold cyan]Creating Profile"), width=80)
-            # Render defaults for supra, gamma, nerd++
-            default_tables = []
-            for model in DEFAULTS:
-                default_tables.append(
-                    Table(json.dumps(DEFAULTS[model], indent=4),
-                          title=f"[bold magenta]{model}", width=37)
-                )
-            self.print(Panel(Columns(default_tables),
-                                     title="[bold cyan]Defaults", width=80))
-            self.print("[italic]Enter [red][!!][/] at any time to cancel\n")
-            FLAG = "!!"  # escape hatch
-
-            # Get profile values
-            profile_name = Prompt.ask("Enter a [green]profile name[/]:",
-                                      default="Default")
-            assert profile_name != FLAG  # escape hatch
-            hostname = Prompt.ask("Enter [green]hostname[/] (Optional):",
-                                  default="Unknown")
-            assert hostname != FLAG
-            frequency = self._validate_int_prompt("Enter [green]frequency[/]",
-                                                  default=550, flag=FLAG)
-            assert frequency and isinstance(frequency, int)  # escape hatch
-            c_voltage = self._validate_int_prompt("Enter [green]coreVoltage[/]",
-                                                  default=1150, flag=FLAG)
-            assert c_voltage and isinstance(c_voltage, int)
-            fanspeed = self._validate_int_prompt("Enter [green]fanspeed[/]",
-                                                 default=100, flag=FLAG)
-            assert fanspeed and isinstance(fanspeed, int)
-
-        except AssertionError:
+            self._render_defaults()
+            # Prompt user and create a new Profile()
+            profile = Profile.create_profile(self._get_profile_config())
+        except AssertionError:  # _get_profile_config() will raise to escape
             self.print("[blue]Canceling profile creation...⏳")
             return
 
-        try: # Return a Profile() and save the config file
-            profile = Profile.create_profile(
-                {"profile_name": profile_name, "hostname": hostname,
-                 "frequency": frequency, "coreVoltage": c_voltage,
-                 "fanspeed": fanspeed}
-            )
-
+        try:
             # Render created profile
             new_profile = Table(profile.__str__(),
                                 title=f"[bold magenta]{profile.name}", width=50)
@@ -356,9 +360,63 @@ class Cli(Console):
             sleep(1)
             return profile
         except AssertionError:
-            print("Error verifying profile was saved")
-        except Exception as e:
-            raise e
+            self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
+
+    def update_profile(self, profile: Profile) -> None:
+        self.print(Rule("[bold cyan]Updating Profile"), width=80)
+        try:
+            if not profile:
+                raise ValueError
+
+            # Render the selected profile
+            self.print(Table(
+                self.profile.__str__(),
+                title=f"[bold magenta]{self.profile.name}[/] (current)",
+                width=50)
+            )
+
+            # Create a new profile to override selected with
+            new_profile = Profile.create_profile(
+                self._get_profile_config(retain_name=profile.name)
+            )
+
+        except ValueError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
+            return
+        except AssertionError:  # _get_profile_config() will raise to escape
+            self.print("[blue]Canceling profile creation...⏳")
+            sleep(0.25)
+            return
+
+        try:
+            # Render current config vs selected profile # TODO breakout
+            print()
+            selected = Table(profile.__str__(),
+                             title=f"[bold magenta]{profile.name}", width=37)
+            updated = Table(new_profile.__str__(),
+                           title=f"[bold magenta]{new_profile.name}", width=37)
+            self.print(Columns([selected, "[bold green]->", updated]))
+
+            # Confirm before saving else re-rerun the update process
+            user_choice = Confirm.ask("[bold green]Update[/] this profile?")
+            if not user_choice:
+                return self.update_profile(self.profile)
+
+            # Set and save the updated profile
+            self.profile = new_profile
+            if self.profile.name != profile.name:
+                self.profile.save_profile(profile_dir=self.profile_dir,
+                                          replace=profile.name)
+            else:
+                self.profile.save_profile(profile_dir=self.profile_dir)
+            assert path.exists(f"{self.profile_dir}{self.profile.name}.json")
+
+            self.print(
+                f"\n[bold]Profile [blue]{self.profile.name}[/] updated! 👍")
+            sleep(1)
+        except AssertionError:
+            self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
 
     def run_profile(self, profile: Profile) -> None:
         self.print(Rule("[bold cyan]Running Profile"), width=80)
@@ -367,19 +425,22 @@ class Cli(Console):
                 raise ValueError
 
             # Get IP
-            ip = Prompt.ask("Enter your target [green]IP address[/]",
-                            default=None)
-            if not ip or len(ip) < 4:  # shortest(?) IP format being abc.d
+            ip = Prompt.ask("Enter target [green]IP address[/] or "
+                            + "[Q] to return to [cyan]Main Menu",
+                            case_sensitive=False,
+                            default=['Q'])
+            if not ip or isinstance(ip, (int, float)) or len(ip) < 4:
+                # shortest(?) IP format being abc.d
                 self.print(
                     "[blue]Invalid IP address. Returning to main menu...⏳")
                 sleep(0.25)
                 return
 
-            # TODO render current config vs selected profile
+            # Render current config vs selected profile
             print()
             active_config = Profile.create_profile_from_active(ip)
             active = Table(active_config.__str__(),
-                                 title="[bold magenta]Active", width=37)
+                           title="[bold magenta]Active", width=37)
             selected = Table(profile.__str__(),
                              title=f"[bold magenta]{profile.name}", width=37)
             self.print(Columns([active, "[bold green]->", selected]))
@@ -437,7 +498,7 @@ class Cli(Console):
             print(e)
 
     def show_profile(self, profile: Profile) -> None:
-        self.print(Rule("[bold cyan]Showing Profile"), width=80)
+        self.print(Rule("[bold cyan]Selected Profile"), width=80)
         try:
             if not profile:
                 raise ValueError
@@ -467,48 +528,49 @@ class Cli(Console):
         # Run session loop via recursion
         match user_choice.lower():
             case 'l':
-                # # TODO separate/check by axe type (single-chip, multi-chip)
+                # List existing Profiles
                 self.print(f"[green][{user_choice}][/] >>> Listing profiles")
-                # sleep(0.3)
                 self.list_profiles(first_page=True)
                 self.session()
             case 'n':
-                # TODO new profile (n)
+                # Create a new Profile
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
-                # TODO Use the obj? Selection (default)?
                 self.profile = self.create_profile()
                 sleep(0.5)
                 self.session()
             case 'u':
-                # TODO update profile (u)
+                # Update selected Profile
                 self.print(f"[green][{user_choice}][/] >>> Updating profile")
-                sleep(0.3)
+                self.update_profile(self.profile)
+                sleep(0.5)
                 self.session()
             case 'r':
-                # TODO run profile (r)
-                # # NOTE apply to multiple devices?
+                # Run selected Profile
+                # # TODO apply to multiple devices
                 self.print(f"[green][{user_choice}][/] >>> Running profile")
                 self.run_profile(self.profile)
                 sleep(0.5)
                 self.session()
             case 'd':
-                # TODO delete profile (d)
+                # Delete selected Profile
                 self.print(f"[green][{user_choice}][/] >>> Deleting profile")
                 self.delete_profile(self.profile)
                 sleep(0.5)
                 self.session()
             case 's':
-                # TODO delete profile (d)
+                # Show selected Profile
                 self.print(f"[green][{user_choice}][/] >>> Showing profile")
                 self.show_profile(self.profile)
                 sleep(0.5)
                 self.session()
             case 'm':
+                # Show the main menu
                 self.print(
                     f"[bright_cyan][{user_choice}][/] >>> Returning to menu")
                 sleep(0.3)
                 self.session()
             case 'q':
+                # Quit the program
                 self.print(f"[red][{user_choice}][/] >>> Session Terminated")
                 return
 
