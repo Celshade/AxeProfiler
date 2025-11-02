@@ -152,6 +152,7 @@ class Cli(Console):
             menu.add_row("[grey]U", "Update the selected Profile")
             menu.add_row("[grey]R", "Run the selected Profile")
             menu.add_row("[grey]D", "Delete an existing Profile")
+            menu.add_row("[grey]S", "Show selected Profile")
         menu.add_row(
             "[bold cyan]M[/] (default)", "Show this menu again")
         menu.add_row("[bold red]Q", "Quit the program")
