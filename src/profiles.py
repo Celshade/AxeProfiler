@@ -17,10 +17,9 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import path, rename, remove
-from typing import Self
-from time import sleep
 import json
+from typing import Self
+from os import path, rename
 
 from api import request
 
