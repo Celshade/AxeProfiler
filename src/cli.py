@@ -373,7 +373,6 @@ class Cli(Console):
                 "frequency": frequency, "coreVoltage": c_voltage,
                 "fanspeed": fanspeed}
 
-
     def _render_defaults(self) -> None:
         """
         Display the default configuration values for all supported models.
