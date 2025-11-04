@@ -127,6 +127,13 @@ class Cli(Console):
         self._profile = profile
 
     def main_menu(self) -> None:
+        """
+        Display the main menu with available options.
+
+        Renders the main menu using a Rich Table, showing all available actions
+        and their descriptions. The menu adapts based on whether a profile is
+        currently selected.
+        """
         system("clear")  # NOTE @Linux; handle MAC/Windows
 
         # Create the main menu as a table
@@ -165,8 +172,10 @@ class Cli(Console):
 
         Args:
             profile_name: The name of the profile to load.
+
         Returns:
             A `Profile` obj containing axe config data.
+
         Raises:
             FileNotFoundError: if no file is found for the given name.
         """
@@ -184,7 +193,7 @@ class Cli(Console):
         """List all existing profiles.
 
         Args:
-            profiles: An array of profile names.
+            profiles: An array of profile names (default=None).
             num_rendered: The number of profiles rendered so far (default=0).
             first_page: Toggle Rule() on first page load (default=False).
         """
@@ -255,12 +264,16 @@ class Cli(Console):
 
     def _validate_int_prompt(self, prompt: str,
                              default: int, flag: str) -> int | bool:
-        """Validate `int` prompts while allowing for a `str` flag to interrupt.
+        """
+        Validate integer prompts while allowing for a string flag to interrupt.
+
+        Prompts the user for an integer value, with support for a special flag
+        to cancel the process. Recursively re-prompts on invalid input.
 
         Args:
             prompt: The user prompt.
             default: The default value if users enters nothing.
-            flag: The escape flag to interrupt the Profile() creation process.
+            flag: The escape flag to interrupt the Profile creation process.
 
         Returns:
             Returns an `int` if the user doesn't pass the `flag` else `False`
@@ -324,14 +337,16 @@ class Cli(Console):
                                     title="[bold cyan]Defaults", width=80))
 
     def create_profile(self) -> Profile | None:
-        """Create and save a profile for the given config.
+        """
+        Create and save a profile for the given configuration.
 
-        Assertions are used in combination with a `FLAG` to give the user an
-        escape hatch mid-creation process.
+        Guides the user through the process of creating a new profile, with
+        validation and the ability to cancel at any step. Displays model
+        defaults and confirms before saving.
 
         Returns:
-            A `Profile` obj containing axe config data or `None` if the user
-            enters a cancel command.
+            A `Profile` obj containing axe config data else `None` if the user
+            cancels mid process.
         """
         self.print(Rule("[bold cyan]Creating Profile"), width=80)
         try:
@@ -419,6 +434,19 @@ class Cli(Console):
             self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
 
     def run_profile(self, profile: Profile) -> None:
+        """
+        Apply the selected profile to a device.
+
+        Prompts the user for a device IP address, displays the current and
+        selected configurations, and applies the profile if confirmed.
+
+        Args:
+            profile: The profile to apply.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+            ConnectTimeout: If the device cannot be reached.
+        """
         self.print(Rule("[bold cyan]Running Profile"), width=80)
         try:
             if not profile:
@@ -468,6 +496,19 @@ class Cli(Console):
             sleep(0.25)
 
     def delete_profile(self, profile: Profile) -> None:
+        """
+        Delete the specified profile.
+
+        Prompts the user for confirmation before deleting the profile file from
+        disk and clearing the current selection.
+
+        Args:
+            profile: The profile to delete.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+            FileNotFoundError: If the profile file does not exist.
+        """
         try:
             self.print(Rule("[bold cyan]Deleting Profile"), width=80)
             if not profile:
@@ -498,6 +539,18 @@ class Cli(Console):
             print(e)
 
     def show_profile(self, profile: Profile) -> None:
+        """
+        Display the details of the selected profile.
+
+        Renders the profile's configuration in a Rich table and waits for user
+        input before returning to the main menu.
+
+        Args:
+            profile: The profile to display.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+        """
         self.print(Rule("[bold cyan]Selected Profile"), width=80)
         try:
             if not profile:
@@ -516,6 +569,14 @@ class Cli(Console):
             sleep(0.25)
 
     def session(self) -> None:
+        """
+        Start the CLI session loop.
+
+        Handles user input for navigating the main menu and performing actions
+        such as listing, creating, updating, running, deleting, and showing
+        profiles. Recursively calls itself to maintain the session until the
+        user quits.
+        """
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask(
