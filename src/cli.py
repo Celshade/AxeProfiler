@@ -37,8 +37,7 @@ from profiles import Profile
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
-# Model defaults
-DEFAULTS = {
+DEFAULTS = {  # BitAxe and NerdQAxe model defaults
     "Supra": {"frequency": 490, "core_voltage": 1166, "fanspeed": 90},
     "Gamma": {"frequency": 525, "core_voltage": 1150, "fanspeed": 90},
     "NerdQ++": {"frequency": 600, "core_voltage": 1150, "fanspeed": 90},
@@ -47,6 +46,24 @@ DEFAULTS = {
 
 
 class Cli(Console):
+    """
+    Command-line interface for managing AxeProfiler device profiles.
+
+    Inherits from Rich's Console to provide enhanced terminal output and user
+    interaction. Handles profile creation, listing, updating, deletion, and
+    application to devices. Provides a session loop for interactive use and]
+    utilities for rendering menus and defaults.
+
+    Methods:
+        main_menu: Display the main menu with available options.
+        list_profiles: List all existing profiles with pagination.
+        create_profile: Create and save a profile for the given configuration.
+        update_profile: Update the configuration of an existing profile.
+        run_profile: Apply the selected profile to a device.
+        delete_profile: Delete the specified profile.
+        show_profile: Display the details of the selected profile.
+        session: Start the CLI session loop.
+    """
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
@@ -112,18 +129,33 @@ class Cli(Console):
 
     @property
     def profile_dir(self) -> str:
+        """
+        Return the path where profiles are saved locally - set in `.config`. The
+        default will be set to the `{program_root}/.profiles/`
+        """
         return self.__profile_dir
 
     @property
     def num_profiles(self) -> int:
+        """
+        Return the number of existing profiles found.
+        """
         return len(listdir(self.profile_dir))
 
     @property
     def profile(self) -> Profile:
+        """
+        Return the active `Profile()` obj.
+        """
         return self._profile
 
     @profile.setter
     def profile(self, profile: Profile) -> None:
+        """
+        Set an active `Profile()`.
+        
+        Args:
+            profile: The `Profile()` obj to set as active."""
         self._profile = profile
 
     def main_menu(self) -> None:
