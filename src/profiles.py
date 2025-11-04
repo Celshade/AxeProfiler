@@ -101,6 +101,7 @@ class Profile():
 
         Args:
             config: A dict of config data to create the Profile from.
+
         Returns:
             A dict of data validated for use in `Profile` creation.
         """
@@ -145,8 +146,10 @@ class Profile():
 
         Args:
             config: A dict of config data to create the Profile from.
+
         Returns:
             Returns a new `Profile`.
+
         Raises:
             AttributeError: if config data failes validation.
         """
@@ -258,5 +261,5 @@ class Profile():
                 if k not in ("profile_name", "hostname")
             }
         # print(push_data)
-        res = request(ip=ip, endpoint="system", body=push_data)
-        res = request(ip=ip, endpoint="restart")
+        request(ip=ip, endpoint="system", body=push_data)
+        request(ip=ip, endpoint="restart")
