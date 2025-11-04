@@ -124,8 +124,11 @@ class Cli(Console):
         return f"Cli()"
 
     def __str__(self) -> str:
-        # TODO implement
-        return ""
+        return json.dumps(
+            {
+                "num_profiles": len(listdir(self.__profile_dir)),
+                "active_profile": self._profile.name if self._profile else None
+            }, indent=4)
 
     @property
     def profile_dir(self) -> str:
