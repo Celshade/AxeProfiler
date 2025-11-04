@@ -168,7 +168,8 @@ class Cli(Console):
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
     def _load_profile(self, profile_name: str) -> Profile:
-        """Load an existing profile.
+        """
+        Load an existing profile.
 
         Args:
             profile_name: The name of the profile to load.
@@ -190,7 +191,8 @@ class Cli(Console):
 
     def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0, first_page: bool = False) -> None:
-        """List all existing profiles.
+        """
+        List all existing profiles.
 
         Args:
             profiles: An array of profile names (default=None).
@@ -300,6 +302,18 @@ class Cli(Console):
             return False
 
     def _get_profile_config(self, retain_name: str = None) -> CONFIG:
+        """
+        Prompt the user for profile configuration values.
+
+        Guides the user through entering configuration values for a new or
+        updated profile. Optionally retains the profile name if provided.
+
+        Args:
+            retain_name: The profile name to retain (default=None).
+
+        Returns:
+            A dictionary containing the profile configuration values.
+        """
         self.print("[italic]Enter [red][!!][/] at any time to cancel\n")
         FLAG = "!!"  # escape hatch
 
@@ -326,6 +340,12 @@ class Cli(Console):
 
 
     def _render_defaults(self) -> None:
+        """
+        Display the default configuration values for all supported models.
+
+        Renders a Rich table showing the default frequency, core voltage, and
+        fan speed for each supported miner model.
+        """
         # Render defaults for supra, gamma, nerd++
         default_tables = []
         for model in DEFAULTS:
@@ -378,6 +398,15 @@ class Cli(Console):
             self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
 
     def update_profile(self, profile: Profile) -> None:
+        """
+        Update the configuration of an existing profile.
+
+        Prompts the user to modify the configuration values of the selected
+        profile. Saves the updated profile if changes are confirmed.
+
+        Args:
+            profile: The profile to update.
+        """
         self.print(Rule("[bold cyan]Updating Profile"), width=80)
         try:
             if not profile:
