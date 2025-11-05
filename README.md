@@ -9,6 +9,9 @@ _polished/packaged for official release yet._
 
 ## Requirements
 * [python](https://www.python.org/downloads/) >= 3.11
+  #### Python Libraries (pip install)
+  * requests >= 2.32.5
+  * rich >= 14.2.0
 
 ## Installation
 Coming soon... ⌛
