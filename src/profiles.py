@@ -17,10 +17,9 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import path, rename, remove
-from typing import Self
-from time import sleep
 import json
+from typing import Self
+from os import path, rename
 
 from api import request
 
@@ -31,7 +30,23 @@ def validate_profile(profile_dir: str, profile_name: str) -> bool:
 
 
 class Profile():
-    """Representation of a device config used by a miner running AxeOS."""
+    """
+    Representation of a device config used by a miner running AxeOS.
+
+    Args:
+        name: The profile name.
+        hostname: The hostname of the device.
+        frequency: The frequency setting for the device.
+        coreVoltage: The core voltage setting for the device.
+        fanspeed: The fan speed setting for the device.
+
+    Methods:
+        validate_profile_data: Validate config data before init.
+        create_profile(): Create a new `Profile()` obj.
+        create_profile_from_active: Create a `Profile()` from an active config.
+        save_profile: Save the profile data to a file.
+        run_profile: Apply the profile settings to a device.
+    """
     def __init__(self,
                  profile_name: str, hostname: str,
                  frequency: int, coreVoltage: int, fanspeed: int):
@@ -92,15 +107,14 @@ class Profile():
     @classmethod
     def validate_profile_data(
             cls, config: dict[str, str | int]) -> dict[str, str | int]:
-        """Validate and return a config dict for creating/updating Profiles.
+        """Validate and return a config dict for CREATING Profiles.
 
         Only data used by `Profile` instantiation will be persisted in the
-        returned `dict` after type validation. NOTE: This method is only
-        intended for use in creating `Profile` objects - see
-        `Profile.update_profile()` for updates to existing profiles.
+        returned `dict` after type validation.
 
         Args:
             config: A dict of config data to create the Profile from.
+
         Returns:
             A dict of data validated for use in `Profile` creation.
         """
@@ -145,8 +159,10 @@ class Profile():
 
         Args:
             config: A dict of config data to create the Profile from.
+
         Returns:
             Returns a new `Profile`.
+
         Raises:
             AttributeError: if config data failes validation.
         """
@@ -157,6 +173,15 @@ class Profile():
 
     @classmethod
     def create_profile_from_active(cls, ip: str) -> Self:
+        """
+        Create a Profile instance from an active configuration.
+
+        Args:
+            ip: The IP address to fetch the active configuration from.
+
+        Returns:
+            A new Profile object initialized with the active configuration.
+        """
         data = request(ip, "info").json()
         profile_data = {"profile_name": "Active"}
         profile_data.update({
@@ -225,8 +250,19 @@ class Profile():
     #     except Exception as e:
     #         raise e
 
-    def save_profile(self,
-                     profile_dir: str, replace: str | None = None):
+    def save_profile(self, profile_dir: str,
+                     replace: str | None = None) -> None:
+        """
+        Save the current profile data to a file.
+
+        Args:
+            profile_dir: The directory where the profile will be saved.
+            replace: The name of the profile to replace (default=None).
+
+        Raises:
+            IOError: If there is an error writing to the specified file.
+            ValueError: If the profile data is invalid or incomplete.
+        """
         try:
             if replace and validate_profile(profile_dir=profile_dir,
                                             profile_name=replace):
@@ -258,5 +294,5 @@ class Profile():
                 if k not in ("profile_name", "hostname")
             }
         # print(push_data)
-        res = request(ip=ip, endpoint="system", body=push_data)
-        res = request(ip=ip, endpoint="restart")
+        request(ip=ip, endpoint="system", body=push_data)
+        request(ip=ip, endpoint="restart")

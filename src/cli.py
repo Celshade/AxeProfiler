@@ -37,8 +37,7 @@ from profiles import Profile
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
-# Model defaults
-DEFAULTS = {
+DEFAULTS = {  # BitAxe and NerdQAxe model defaults
     "Supra": {"frequency": 490, "core_voltage": 1166, "fanspeed": 90},
     "Gamma": {"frequency": 525, "core_voltage": 1150, "fanspeed": 90},
     "NerdQ++": {"frequency": 600, "core_voltage": 1150, "fanspeed": 90},
@@ -47,6 +46,24 @@ DEFAULTS = {
 
 
 class Cli(Console):
+    """
+    Command-line interface for managing AxeProfiler device profiles.
+
+    Inherits from Rich's Console to provide enhanced terminal output and user
+    interaction. Handles profile creation, listing, updating, deletion, and
+    application to devices. Provides a session loop for interactive use and]
+    utilities for rendering menus and defaults.
+
+    Methods:
+        main_menu: Display the main menu with available options.
+        list_profiles: List all existing profiles with pagination.
+        create_profile: Create and save a profile for the given configuration.
+        update_profile: Update the configuration of an existing profile.
+        run_profile: Apply the selected profile to a device.
+        delete_profile: Delete the specified profile.
+        show_profile: Display the details of the selected profile.
+        session: Start the CLI session loop.
+    """
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
@@ -107,26 +124,51 @@ class Cli(Console):
         return f"Cli()"
 
     def __str__(self) -> str:
-        # TODO implement
-        return ""
+        return json.dumps(
+            {
+                "num_profiles": len(listdir(self.__profile_dir)),
+                "active_profile": self._profile.name if self._profile else None
+            }, indent=4)
 
     @property
     def profile_dir(self) -> str:
+        """
+        Return the path where profiles are saved locally - set in `.config`. The
+        default will be set to the `{program_root}/.profiles/`
+        """
         return self.__profile_dir
 
     @property
     def num_profiles(self) -> int:
+        """
+        Return the number of existing profiles found.
+        """
         return len(listdir(self.profile_dir))
 
     @property
     def profile(self) -> Profile:
+        """
+        Return the active `Profile()` obj.
+        """
         return self._profile
 
     @profile.setter
     def profile(self, profile: Profile) -> None:
+        """
+        Set an active `Profile()`.
+        
+        Args:
+            profile: The `Profile()` obj to set as active."""
         self._profile = profile
 
     def main_menu(self) -> None:
+        """
+        Display the main menu with available options.
+
+        Renders the main menu using a Rich Table, showing all available actions
+        and their descriptions. The menu adapts based on whether a profile is
+        currently selected.
+        """
         system("clear")  # NOTE @Linux; handle MAC/Windows
 
         # Create the main menu as a table
@@ -161,12 +203,15 @@ class Cli(Console):
         self.print(Panel(menu, title="[bold bright_cyan]Main Menu", width=80))
 
     def _load_profile(self, profile_name: str) -> Profile:
-        """Load an existing profile.
+        """
+        Load an existing profile.
 
         Args:
             profile_name: The name of the profile to load.
+
         Returns:
             A `Profile` obj containing axe config data.
+
         Raises:
             FileNotFoundError: if no file is found for the given name.
         """
@@ -181,10 +226,11 @@ class Cli(Console):
 
     def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0, first_page: bool = False) -> None:
-        """List all existing profiles.
+        """
+        List all existing profiles.
 
         Args:
-            profiles: An array of profile names.
+            profiles: An array of profile names (default=None).
             num_rendered: The number of profiles rendered so far (default=0).
             first_page: Toggle Rule() on first page load (default=False).
         """
@@ -255,12 +301,16 @@ class Cli(Console):
 
     def _validate_int_prompt(self, prompt: str,
                              default: int, flag: str) -> int | bool:
-        """Validate `int` prompts while allowing for a `str` flag to interrupt.
+        """
+        Validate integer prompts while allowing for a string flag to interrupt.
+
+        Prompts the user for an integer value, with support for a special flag
+        to cancel the process. Recursively re-prompts on invalid input.
 
         Args:
             prompt: The user prompt.
             default: The default value if users enters nothing.
-            flag: The escape flag to interrupt the Profile() creation process.
+            flag: The escape flag to interrupt the Profile creation process.
 
         Returns:
             Returns an `int` if the user doesn't pass the `flag` else `False`
@@ -287,6 +337,18 @@ class Cli(Console):
             return False
 
     def _get_profile_config(self, retain_name: str = None) -> CONFIG:
+        """
+        Prompt the user for profile configuration values.
+
+        Guides the user through entering configuration values for a new or
+        updated profile. Optionally retains the profile name if provided.
+
+        Args:
+            retain_name: The profile name to retain (default=None).
+
+        Returns:
+            A dictionary containing the profile configuration values.
+        """
         self.print("[italic]Enter [red][!!][/] at any time to cancel\n")
         FLAG = "!!"  # escape hatch
 
@@ -311,8 +373,13 @@ class Cli(Console):
                 "frequency": frequency, "coreVoltage": c_voltage,
                 "fanspeed": fanspeed}
 
-
     def _render_defaults(self) -> None:
+        """
+        Display the default configuration values for all supported models.
+
+        Renders a Rich table showing the default frequency, core voltage, and
+        fan speed for each supported miner model.
+        """
         # Render defaults for supra, gamma, nerd++
         default_tables = []
         for model in DEFAULTS:
@@ -324,14 +391,16 @@ class Cli(Console):
                                     title="[bold cyan]Defaults", width=80))
 
     def create_profile(self) -> Profile | None:
-        """Create and save a profile for the given config.
+        """
+        Create and save a profile for the given configuration.
 
-        Assertions are used in combination with a `FLAG` to give the user an
-        escape hatch mid-creation process.
+        Guides the user through the process of creating a new profile, with
+        validation and the ability to cancel at any step. Displays model
+        defaults and confirms before saving.
 
         Returns:
-            A `Profile` obj containing axe config data or `None` if the user
-            enters a cancel command.
+            A `Profile` obj containing axe config data else `None` if the user
+            cancels mid process.
         """
         self.print(Rule("[bold cyan]Creating Profile"), width=80)
         try:
@@ -363,6 +432,15 @@ class Cli(Console):
             self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
 
     def update_profile(self, profile: Profile) -> None:
+        """
+        Update the configuration of an existing profile.
+
+        Prompts the user to modify the configuration values of the selected
+        profile. Saves the updated profile if changes are confirmed.
+
+        Args:
+            profile: The profile to update.
+        """
         self.print(Rule("[bold cyan]Updating Profile"), width=80)
         try:
             if not profile:
@@ -419,6 +497,19 @@ class Cli(Console):
             self.print("[red]Error[/] verifying [magenta]profile[/] was saved")
 
     def run_profile(self, profile: Profile) -> None:
+        """
+        Apply the selected profile to a device.
+
+        Prompts the user for a device IP address, displays the current and
+        selected configurations, and applies the profile if confirmed.
+
+        Args:
+            profile: The profile to apply.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+            ConnectTimeout: If the device cannot be reached.
+        """
         self.print(Rule("[bold cyan]Running Profile"), width=80)
         try:
             if not profile:
@@ -468,6 +559,19 @@ class Cli(Console):
             sleep(0.25)
 
     def delete_profile(self, profile: Profile) -> None:
+        """
+        Delete the specified profile.
+
+        Prompts the user for confirmation before deleting the profile file from
+        disk and clearing the current selection.
+
+        Args:
+            profile: The profile to delete.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+            FileNotFoundError: If the profile file does not exist.
+        """
         try:
             self.print(Rule("[bold cyan]Deleting Profile"), width=80)
             if not profile:
@@ -498,6 +602,18 @@ class Cli(Console):
             print(e)
 
     def show_profile(self, profile: Profile) -> None:
+        """
+        Display the details of the selected profile.
+
+        Renders the profile's configuration in a Rich table and waits for user
+        input before returning to the main menu.
+
+        Args:
+            profile: The profile to display.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+        """
         self.print(Rule("[bold cyan]Selected Profile"), width=80)
         try:
             if not profile:
@@ -516,6 +632,14 @@ class Cli(Console):
             sleep(0.25)
 
     def session(self) -> None:
+        """
+        Start the CLI session loop.
+
+        Handles user input for navigating the main menu and performing actions
+        such as listing, creating, updating, running, deleting, and showing
+        profiles. Recursively calls itself to maintain the session until the
+        user quits.
+        """
         # Handle user choice
         self.main_menu()
         user_choice = Prompt.ask(
