@@ -1,0 +1,24 @@
+# [build-system]
+
+[project]
+name = "AxeProfiler"
+version = "0.1.0"
+authors = [{name = "Celshade", email = "ggcelshade@gmail.com"}]
+readme = "README.md"
+license = "GLP-3.0-or-later"
+license-files = ["COPYING"]
+keywords = ["bitaxe", "nerdaxe", "axeos", "bitcoin", "miner"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers/Users",
+    "Topic :: Bitcoin Miners :: AxeOS Convenience",
+    "Programming Language :: Python :: 3.11"
+]
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.32.5",
+    "rich>=14.2.0"
+]
+
+[project.urls]
+Repository = "https://github.com/Celshade/AxeProfiler"
