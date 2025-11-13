@@ -660,7 +660,7 @@ class Cli(Console):
             case 'n':
                 # Create a new Profile
                 self.print(f"[green][{user_choice}][/] >>> Creating profile")
-                self.profile = self.create_profile()
+                self.profile = self.create_profile() or self.profile
                 sleep(0.5)
                 self.session()
             case 'u':

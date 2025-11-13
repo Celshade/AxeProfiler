@@ -30,10 +30,6 @@ importing the entry-point function.
 >>> from axeprofiler.__main__ import main
 >>> main()
 ```
-You can of course also just clone the repo and call the main file directly.
-```
-user: <axeprofiler_directory>$ python src/axeprofiler/__main__.py
-```
 ## Notes
 Coming soon... ⌛
 
