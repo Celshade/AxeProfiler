@@ -704,7 +704,6 @@ class Cli(Console):
                 return
 
 
-if __name__ == "__main__":
-    # print(__file__.split("src")[0])
+if __name__ == "__main__":  # bypass notice if run from here
     cli = Cli()
     cli.session()

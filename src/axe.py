@@ -49,8 +49,9 @@ def show_notice() -> bool:
         return Confirm.ask("Do you want to start the program?", default='y')
 
 
-if __name__ == "__main__":
-    # Run the program if the users chooses to continue after the notice
+# TODO add title screen?
+
+if __name__ == "__main__":  # NOTE Program entry point
     start = show_notice()
     if start:
         cli = Cli()
