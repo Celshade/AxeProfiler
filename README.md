@@ -9,19 +9,31 @@ _polished/packaged for official release yet._
 
 ## Requirements
 * [python](https://www.python.org/downloads/) >= 3.11
-  #### Python Libraries (pip install)
   * requests >= 2.32.5
   * rich >= 14.2.0
 
 ## Installation
+### [The Way of the Plebb]
 Coming soon... ⌛
 
-## Running the Program
-Navigate to the root directory of the project, and simply run the following:
+### [The Way of the Dev]
+Install the package via `pip`, and then simply start the program with the
+`axeprof` command.
 ```
-python src/axe.py
+(venv) $ python -m pip install axeprofiler
+(venv) $ axeprof
 ```
-
+Once installed, you may also start the program from inside a python REPL by
+importing the entry-point function.
+```
+>>> # inside REPL
+>>> from axeprofiler.__main__ import main
+>>> main()
+```
+You can of course also just clone the repo and call the main file directly.
+```
+user: <axeprofiler_directory>$ python src/axeprofiler/__main__.py
+```
 ## Notes
 Coming soon... ⌛
 
