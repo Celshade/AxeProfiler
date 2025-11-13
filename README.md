@@ -4,8 +4,12 @@
 [![built with Python3](https://img.shields.io/badge/built%20with-Python3-green.svg)](https://www.python.org/)
 
 
-_Please note that this project is still in active development and is not_
-_polished/packaged for official release yet._
+_AxeProfiler provides a convenient CLI to create/save/apply AxeOS miner configs._
+
+Navigate through a clean and simple CLI to create, save, and then apply various
+AxeOS configurations - all from your keyboard. No more tedious clicking through
+every device dashboard!
+![](demo.gif)
 
 ## Requirements
 * [python](https://www.python.org/downloads/) >= 3.11
@@ -31,7 +35,12 @@ importing the entry-point function.
 >>> main()
 ```
 ## Notes
-Coming soon... ⌛
+* This project is still in active development, and it's possible a few hidden
+bugs linger (though, they are actively hunted down).
+* While there are confirmation prompts, please do your due diligence to know
+which device (IP) you are applying a profile to.
+* Deleting a [selected] profile does not remove the configuration from an active
+miner running it.
 
 ---
 _While not expected, any tips/donations [in bitcoin] are greatly appreciated_
