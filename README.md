@@ -21,8 +21,16 @@ every device dashboard!
 Coming soon... ⌛
 
 ### [The Way of the Dev]
-Install the package via `pip`, and then simply start the program with the
-`axeprof` command.
+Clone the repo and run `pip install -e .` from the project root directory. This
+should install all dependencies and add the `axeprof` command to PATH - allowing
+you to call the program from anywhere with that pip environment active.
+```
+(venv) <axeprofiler_directory>$ pip install -e .
+(venv) $ axeprof
+```
+
+You can also install the package from PYPI\
+(🐛 may cause a non-critical bug with showing the initial copyright notice)
 ```
 (venv) $ python -m pip install axeprofiler
 (venv) $ axeprof

@@ -23,7 +23,7 @@ from rich.panel import Panel
 from rich.prompt import Confirm
 from rich import print as rprint
 
-from .cli import Cli
+from axeprofiler.cli import Cli
 
 
 def show_notice() -> bool:

@@ -33,7 +33,7 @@ from rich.progress import Progress
 from rich.prompt import Prompt, Confirm
 from requests.exceptions import ConnectTimeout
 
-from .profiles import Profile
+from axeprofiler.profiles import Profile
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
