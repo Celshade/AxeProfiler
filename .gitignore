@@ -5,9 +5,8 @@ venv/
 
 
 # root
+.config
 .profiles/
 .logs/
-
-
 
 # other
