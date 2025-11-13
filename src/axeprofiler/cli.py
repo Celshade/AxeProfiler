@@ -159,8 +159,7 @@ class Cli(Console):
 
         Args:
             profile: The `Profile()` obj to set as active."""
-        assert isinstance(profile, Profile)
-        self._profile = profile
+        self._profile = profile if isinstance(profile, Profile) else None
 
     def main_menu(self) -> None:
         """
