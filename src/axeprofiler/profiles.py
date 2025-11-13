@@ -21,7 +21,7 @@ import json
 from typing import Self
 from os import path, rename
 
-from api import request
+from .api import request
 
 
 def validate_profile(profile_dir: str, profile_name: str) -> bool:
