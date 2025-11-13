@@ -1,13 +1,15 @@
 # python
 .pyc
 __pycache__
-venv/
+venv*/
 
 
-# root
+# axeprofiler
 .config
 .profiles/
 .logs/
 
 # other
 dist/
+build/
+__main__.spec
