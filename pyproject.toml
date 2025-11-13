@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AxeProfiler"
-version = "0.1.4"
+version = "0.1.5"
 authors = [{name = "Celshade", email = "ggcelshade@gmail.com"}]
 description = "Axeprofiler provides a convenient CLI to create/save/apply AxeOS miner configs."
 readme = "README.md"
@@ -19,8 +19,8 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "requests>2.32",
-    "rich>14.1"
+    "requests",
+    "rich"
 ]
 
 [project.urls]
