@@ -285,7 +285,8 @@ class Cli(Console):
                          width=80))
 
         # Handle user choice and menu navigation
-        msg = "Enter [green][Q][/] to return to the [cyan]Main Menu[/]"
+        msg = "Enter a [green]number[/] to select the corresponding profile.\n"
+        msg += "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
         if len(_profiles) > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
             user_choice = Prompt.ask(msg,
@@ -521,7 +522,7 @@ class Cli(Console):
 
             # Get IP
             ip = Prompt.ask("Enter target [green]IP address[/] or "
-                            + "[Q] to return to [cyan]Main Menu",
+                            + "[Q] to quit to [cyan]Main Menu",
                             case_sensitive=False,
                             default=['Q'])
             if not ip or isinstance(ip, (int, float)) or len(ip) < 4:
