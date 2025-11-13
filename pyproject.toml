@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AxeProfiler"
-version = "0.1.1"
+version = "0.1.2"
 authors = [{name = "Celshade", email = "ggcelshade@gmail.com"}]
 description = "Axeprofiler provides a convenient CLI to create/save/apply AxeOS miner configs."
 readme = "README.md"
