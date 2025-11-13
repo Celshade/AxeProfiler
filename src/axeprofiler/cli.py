@@ -159,11 +159,8 @@ class Cli(Console):
 
         Args:
             profile: The `Profile()` obj to set as active."""
-        try:
-            assert isinstance(profile, Profile)
-            self._profile = profile
-        except AssertionError:
-            print("Not a valid Profile() - cannot set active Profile() 💔")
+        assert isinstance(profile, Profile)
+        self._profile = profile
 
     def main_menu(self) -> None:
         """
