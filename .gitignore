@@ -1,2 +1,15 @@
+# python
 .pyc
-venv/
+__pycache__
+venv*/
+
+
+# axeprofiler
+.config
+.profiles/
+.logs/
+
+# other
+dist/
+build/
+__main__.spec
