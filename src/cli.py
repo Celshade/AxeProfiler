@@ -156,10 +156,14 @@ class Cli(Console):
     def profile(self, profile: Profile) -> None:
         """
         Set an active `Profile()`.
-        
+
         Args:
             profile: The `Profile()` obj to set as active."""
-        self._profile = profile
+        try:
+            assert isinstance(profile, Profile)
+            self._profile = profile
+        except AssertionError:
+            print("Not a valid Profile() - cannot set active Profile() 💔")
 
     def main_menu(self) -> None:
         """
