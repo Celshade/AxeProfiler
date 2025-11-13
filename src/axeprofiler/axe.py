@@ -49,10 +49,12 @@ def show_notice() -> bool:
         return Confirm.ask("Do you want to start the program?", default='y')
 
 
-# TODO add title screen?
-
-if __name__ == "__main__":  # NOTE Program entry point
-    start = show_notice()
-    if start:
+def main() -> None:  # NOTE Program entry point
+    # TODO add title screen?
+    if show_notice():
         cli = Cli()
         cli.session()
+
+
+if __name__ == "__main__":
+    main()
