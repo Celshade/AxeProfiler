@@ -41,7 +41,7 @@ DEFAULTS = {  # BitAxe and NerdQAxe model defaults
     "Supra": {"frequency": 490, "core_voltage": 1166, "fanspeed": 90},
     "Gamma": {"frequency": 525, "core_voltage": 1150, "fanspeed": 90},
     "NerdQ++": {"frequency": 600, "core_voltage": 1150, "fanspeed": 90},
-    "NerdQX": {"frequency": "***", "core_voltage": "****", "fanspeed": "**"}
+    "NerdQX": {"frequency": 777, "core_voltage": 1200, "fanspeed": 90}
 }
 
 
