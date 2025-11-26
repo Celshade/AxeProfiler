@@ -29,8 +29,7 @@ you to call the program from anywhere with that pip environment active.
 (venv) $ axeprof
 ```
 
-You can also install the package from PYPI\
-(🐛 may cause a non-critical bug with showing the initial copyright notice)
+You can also install the package from PYPI
 ```
 (venv) $ python -m pip install axeprofiler
 (venv) $ axeprof
@@ -38,7 +37,7 @@ You can also install the package from PYPI\
 Once installed, you may also start the program from inside a python REPL by
 importing the entry-point function.
 ```
->>> # inside REPL
+>>> # inside python REPL
 >>> from axeprofiler.__main__ import main
 >>> main()
 ```
