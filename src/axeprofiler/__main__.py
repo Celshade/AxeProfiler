@@ -29,9 +29,9 @@ from axeprofiler.cli import Cli
 def show_notice() -> bool:
     notice = ''.join(
         ("[green]AxeProfiler Copyright (C) 2025 [DC] Celshade ",
-        "<ggcelshade@gmail.com>[/]\n",
+        "<ggcelshade@gmail.com>[/]\n\n",
         "This program comes with ABSOLUTELY NO WARRANTY.\n",
-        "This is free software, and you are welcome to redistribute it nunder ",
+        "This is free software, and you are welcome to redistribute it under ",
         "certain conditions. For more details, see:")
     )
     copying = "https://github.com/Celshade/AxeProfiler/blob/master/COPYING"
