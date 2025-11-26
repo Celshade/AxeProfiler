@@ -26,37 +26,22 @@ from rich import print as rprint
 from axeprofiler.cli import Cli
 
 
-def get_root() -> str | None:
-    """Return the project root dir."""
-    if "src" in __file__:
-        return __file__.split("src")[0]
-    return __file__.split("__")[0] if "__" in __file__ else None
-
-
 def show_notice() -> bool:
-    try:
-        root = get_root()
-        if not root:
-            raise FileNotFoundError
+    notice = ''.join(
+        ("[green]AxeProfiler Copyright (C) 2025 [DC] Celshade ",
+        "<ggcelshade@gmail.com>[/]\n",
+        "This program comes with ABSOLUTELY NO WARRANTY.\n",
+        "This is free software, and you are welcome to redistribute it nunder ",
+        "certain conditions. For more details, see line 4 of any source file ",
+        "or:")
+    )
+    copying = "https://github.com/Celshade/AxeProfiler/blob/master/COPYING"
 
-        notice = f"{root}.notice"
-        copying = f"{root}COPYING"
-
-        with open(notice, 'r') as f:
-            notice = f.read()
-
-        system("clear")  # NOTE @Linux; handle MAC/Windows
-        rprint(Panel(f"{notice}[bold magenta]{copying}[/].",
-                     title="[bold bright_cyan]Copyright Notice",
-                     width=80))
-        return Confirm.ask("Do you want to start the program?", default='y')
-    except FileNotFoundError:
-        msg = ''.join(("Could not render the [red]copyright[/] notice.\n",
-                        "Please see line 4 of any source file or ",
-                        f"[red]{copying}[/] for more details."))
-        rprint(Panel(msg, title="[bold bright_cyan]Copyright Notice",
-                        width=80))
-        return Confirm.ask("Do you want to start the program?", default='y')
+    system("clear")  # NOTE @Linux; handle MAC/Windows
+    rprint(Panel(f"{notice}\n[bold magenta]{copying}[/].",
+                    title="[bold bright_cyan]Copyright Notice",
+                    width=80))
+    return Confirm.ask("Do you want to start the program?", default='y')
 
 
 def main() -> None:  # NOTE Program entry point
