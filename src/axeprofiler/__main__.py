@@ -26,9 +26,19 @@ from rich import print as rprint
 from axeprofiler.cli import Cli
 
 
+def get_root() -> str | None:
+    """Return the project root dir."""
+    if "src" in __file__:
+        return __file__.split("src")[0]
+    return __file__.split("__")[0] if "__" in __file__ else None
+
+
 def show_notice() -> bool:
     try:
-        root = __file__.split('src')[0]
+        root = get_root()
+        if not root:
+            raise FileNotFoundError
+
         notice = f"{root}.notice"
         copying = f"{root}COPYING"
 
@@ -36,7 +46,7 @@ def show_notice() -> bool:
             notice = f.read()
 
         system("clear")  # NOTE @Linux; handle MAC/Windows
-        rprint(Panel(f"{notice}[bold magenta]{copying}.",
+        rprint(Panel(f"{notice}[bold magenta]{copying}[/].",
                      title="[bold bright_cyan]Copyright Notice",
                      width=80))
         return Confirm.ask("Do you want to start the program?", default='y')
