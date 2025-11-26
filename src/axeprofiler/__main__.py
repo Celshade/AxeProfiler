@@ -32,8 +32,7 @@ def show_notice() -> bool:
         "<ggcelshade@gmail.com>[/]\n",
         "This program comes with ABSOLUTELY NO WARRANTY.\n",
         "This is free software, and you are welcome to redistribute it nunder ",
-        "certain conditions. For more details, see line 4 of any source file ",
-        "or:")
+        "certain conditions. For more details, see:")
     )
     copying = "https://github.com/Celshade/AxeProfiler/blob/master/COPYING"
 
