@@ -21,7 +21,7 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir, remove
+from os import system, path, mkdir, listdir, remove, name as os_name
 
 from rich.rule import Rule
 from rich.text import Text
@@ -167,7 +167,7 @@ class Cli(Console):
         and their descriptions. The menu adapts based on whether a profile is
         currently selected.
         """
-        system("clear")  # NOTE @Linux; handle MAC/Windows
+        system("cls" if os_name == "nt" else "clear")
 
         # Create the main menu as a table
         menu = Table("Option", "Description",
