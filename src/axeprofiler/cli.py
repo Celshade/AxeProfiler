@@ -70,47 +70,45 @@ class Cli(Console):
         self.__config: str  = f"{self.__root}.config"  # program config
         self._profile: Profile = None  # Currently selected Profile
 
-        # Start progress bar
-        with Progress() as progress:  # NOTE remove increments? - loads too fast
-            # Check for existing config or create one
+        with Progress() as progress:  # Start progress bar
+            # Validate config file
             config_task = progress.add_task("[blue]Validating config files...")
             progress.update(config_task, advance=25)
+
+            # Check for existing config or create one
             if not path.exists(self.__config):
                 with open(self.__config, 'w') as f:
-                    f.write(json.dumps(
-                        {"profile_dir": f"{self.__root}.profiles/"},
-                        indent=4)
-                    )
+                    config = {"profile_dir": f"{self.__root}.profiles/"}
+                    f.write(json.dumps(config, indent=4))
+            else:  # Read existing config
+                progress.update(config_task, advance=50)
+                with open(self.__config, 'r') as f:
+                    config = json.loads(f.read())
 
-            # Read config
-            progress.update(config_task, advance=50)
-            with open(self.__config, 'r') as f:
-                config = json.loads(f.read())
+            # Validate profile_dir
             progress.update(config_task, advance=25)
-
             profile_task = progress.add_task("[blue]Validating profiles...")
             try:
-                # Verify integrity of profile_dir
                 profile_dir = config.get("profile_dir")
                 progress.update(profile_task, advance=30)
-                if not profile_dir:
-                    # Add default profile_dir to config
+
+                if not profile_dir:  # Add default profile_dir to config
                     with open(self.__config, 'w') as f:
                         config["profile_dir"] = f"{self.__root}.profiles/"
                         f.write(json.dumps(config, indent=4))
 
-                    # Make default profile_dir and assign class attr
-                    mkdir(self.__profile_dir)
+                    # Make and set default profile_dir
                     self.__profile_dir = config["profile_dir"]
-                else:
-                    assert profile_dir
+                    if not path.exists(self.__profile_dir):
+                        mkdir(self.__profile_dir)
+                else:  # Validate existing profile dir
                     assert isinstance(profile_dir, str)
 
                     # Ensure existing profile_dir
                     if not path.exists(profile_dir):
                         mkdir(profile_dir)
 
-                    self.__profile_dir = profile_dir  # assign class attr
+                    self.__profile_dir = profile_dir  # set profile_dir
                 progress.update(profile_task, advance=70)
             except AssertionError:
                 msg = "[red]Invalid profile directory configuration"
