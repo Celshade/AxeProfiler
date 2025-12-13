@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License along with
 # AxeProfiler. If not, see <https://www.gnu.org/licenses/>.
 
-from os import system
+from os import name as os_name, system
 
 from rich.panel import Panel
 from rich.prompt import Confirm
@@ -36,7 +36,7 @@ def show_notice() -> bool:
     )
     copying = "https://github.com/Celshade/AxeProfiler/blob/master/COPYING"
 
-    system("clear")  # NOTE @Linux; handle MAC/Windows
+    system("cls" if os_name == "nt" else "clear")
     rprint(Panel(f"{notice}\n[bold magenta]{copying}[/].",
                     title="[bold bright_cyan]Copyright Notice",
                     width=80))
