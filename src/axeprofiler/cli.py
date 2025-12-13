@@ -21,7 +21,7 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir, remove
+from os import system, path, mkdir, listdir, remove, environ
 
 from rich.rule import Rule
 from rich.text import Text
@@ -66,8 +66,11 @@ class Cli(Console):
     """
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
-        self.__root: str  = __file__.split("src")[0]  # program root
+        # self.__root: str  = __file__.split("src")[0]  # program root
+        # NOTE WINDOWS EXE BUILD
+        self.__root: str = f"{environ.get('APPDATA')}\\AxeProfiler\\"
         self.__config: str  = f"{self.__root}.config"  # program config
+
         self._profile: Profile = None  # Currently selected Profile
 
         with Progress() as progress:  # Start progress bar
@@ -77,6 +80,11 @@ class Cli(Console):
 
             # Check for existing config or create one
             if not path.exists(self.__config):
+                # NOTE executable builds only
+                if not path.exists(self.__root):
+                    mkdir(self.__root)
+
+                # Write config file
                 with open(self.__config, 'w') as f:
                     config = {"profile_dir": f"{self.__root}.profiles/"}
                     f.write(json.dumps(config, indent=4))
