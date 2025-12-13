@@ -21,7 +21,7 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir, remove, name as os_name, environ
+from os import system, path, mkdir, listdir, remove, name as os_name
 
 from rich.rule import Rule
 from rich.text import Text
@@ -67,8 +67,8 @@ class Cli(Console):
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
         # self.__root: str  = __file__.split("src")[0]  # program root
-        # NOTE WINDOWS EXE BUILD
-        self.__root: str = f"{environ.get('APPDATA')}\\AxeProfiler\\"
+        # NOTE UNIX BUILD
+        self.__root: str = f"{path.expanduser('~')}/.AxeProfiler/"
         self.__config: str  = f"{self.__root}.config"  # program config
 
         self._profile: Profile = None  # Currently selected Profile
