@@ -16,9 +16,20 @@ every device dashboard!
   * requests >= 2.32.5
   * rich >= 14.2.0
 
+  _The python libraries are installed automatically during installation_
+
 ## Installation
 ### [The Way of the Plebb]
-Coming soon... ⌛
+**@Mac** | **@Windows** \
+Download the appropriate executable from [here](https://github.com/Celshade/AxeProfiler/releases/tag/v1.1.0)
+and you should be able to simply double click to start the program - or you
+can call it directly from the terminal (if your permissions allow for that).
+
+**@Linux** \
+If you're already running Linux, please follow one of the methods found in
+_The Way of the Dev_ outlined below. An executable may be added in the future;
+however, it's prefable to build from source or simply use python/pip to install
+from PYPI.
 
 ### [The Way of the Dev]
 Clone the repo and run `pip install -e .` from the project root directory. This
