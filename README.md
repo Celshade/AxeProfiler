@@ -34,7 +34,9 @@ from PYPI.
 **NOTE** \
 Executables were created via the Python library [pyinstaller](https://pypi.org/project/pyinstaller/)
 by running the following command on each respective OS:
-`pyinstaller --onefile src/axeprofiler/__main__.py` (from source root)\
+```
+pyinstaller --onefile src/axeprofiler/__main__.py` (from source root)
+```
 _This is NOT an installation step - it is only being shared in the spirit of_
 _transparency, given the nature of executables._
 
