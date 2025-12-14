@@ -31,6 +31,13 @@ _The Way of the Dev_ outlined below. An executable may be added in the future;
 however, it's prefable to build from source or simply use python/pip to install
 from PYPI.
 
+**NOTE** \
+Executables were created via the Python library [pyinstaller](https://pypi.org/project/pyinstaller/)
+by running the following command on each respective OS:
+`pyinstaller --onefile src/axeprofiler/__main__.py` (from source root)\
+_This is NOT an installation step - it is only being shared in the spirit of_
+_transparency, given the nature of executables._
+
 ### [The Way of the Dev]
 Clone the repo and run `pip install -e .` from the project root directory. This
 should install all dependencies and add the `axeprof` command to PATH - allowing
