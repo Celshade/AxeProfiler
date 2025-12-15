@@ -21,7 +21,7 @@ every device dashboard!
 ## Installation
 ### [The Way of the Plebb]
 **@Mac** | **@Windows** \
-Download the appropriate executable from [here](https://github.com/Celshade/AxeProfiler/releases/tag/v1.1.0),
+Download the appropriate executable from [here](https://github.com/Celshade/AxeProfiler/releases/tag/v1.1.1),
 and you should be able to simply double click and run the file to start the
 program - or you can call the executable directly from the terminal. See
 **NOTES** below.
