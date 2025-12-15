@@ -21,9 +21,10 @@ every device dashboard!
 ## Installation
 ### [The Way of the Plebb]
 **@Mac** | **@Windows** \
-Download the appropriate executable from [here](https://github.com/Celshade/AxeProfiler/releases/tag/v1.1.0)
-and you should be able to simply double click to start the program - or you
-can call it directly from the terminal (if your permissions allow for that).
+Download the appropriate executable from [here](https://github.com/Celshade/AxeProfiler/releases/tag/v1.1.0),
+and you should be able to simply double click and run the file to start the
+program - or you can call the executable directly from the terminal. See
+**NOTES** below.
 
 **@Linux** \
 If you're already running Linux, please follow one of the methods found in
@@ -31,14 +32,24 @@ _The Way of the Dev_ outlined below. An executable may be added in the future;
 however, it's prefable to build from source or simply use python/pip to install
 from PYPI.
 
-**NOTE** \
+**NOTES** \
+The Windows' executable was generated for Windows 10/11 - support for older OS
+is not guaranteed.
+
+The MAC executables are simply UNIX executable files. There is no specific file
+extension - _they are **Terminal** apps_, and running them is simply a matter of
+retaining (or allowing) the proper file permissions that your system needs to
+execute them. Look for the option that says _"Run in Terminal_."
+
 Executables were created via the Python library [pyinstaller](https://pypi.org/project/pyinstaller/)
 by running the following command on each respective OS:
 ```
 pyinstaller --onefile src/axeprofiler/__main__.py` (from source root)
 ```
 _This is NOT an installation step - it is only being shared in the spirit of_
-_transparency, given the nature of executables._
+_transparency, given the nature of executables. If you don't feel comfortable_
+_running them, you are more than welcome to follow **The Way of the Dev**_
+_outlined below._
 
 ### [The Way of the Dev]
 Clone the repo and run `pip install -e .` from the project root directory. This
