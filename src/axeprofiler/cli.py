@@ -278,7 +278,7 @@ class Cli(Console):
             title.truncate(max_width=32, overflow="ellipsis")
             tables[num] = {
                 "profile": profile,
-                "table": Table(profile.__str__(),
+                "table": Table(str(profile),
                                title=f"[green][{num}] [bold magenta]{title}",
                                width=37)
             }
