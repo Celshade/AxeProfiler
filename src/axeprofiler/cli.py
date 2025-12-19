@@ -237,7 +237,7 @@ class Cli(Console):
             else:
                 return f"{num_rendered + 1}-{num_rendered + 4}"
         elif num_rendered == 0:
-                return f"1-{num_profiles}"
+                return f"0-0" if num_profiles == 0 else f"1-{num_profiles}"
         else:
             return f"{num_rendered + 1}-{num_rendered + num_profiles}"
 
