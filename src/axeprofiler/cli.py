@@ -222,6 +222,26 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
+    def _get_page_count(self, num_profiles: int, num_rendered: int) -> str:
+        """
+        Return a str display of x-y profile count for the current page being
+        listed by `list_profiles()`. i.e. 1-4, 5-8, etc
+
+        Args:
+            num_profiles: The number of profiles.
+            num_rendered: The number of profiles rendered so far.
+        """
+        if num_profiles >=4:
+            if num_rendered == 0:
+                return "1-4"
+            else:
+                return f"{num_rendered + 1}-{num_rendered + 4}"
+        elif num_rendered == 0:
+                return f"1-{num_profiles}"
+        else:
+            return f"{num_rendered + 1}-{num_rendered + num_profiles}"
+
+
     def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0, first_page: bool = False) -> None:
         """
@@ -234,30 +254,24 @@ class Cli(Console):
         """
         # TODO next iteration, add filters
         # TODO add full profile tracking for selection on any page
+
+        # Operational text
         if first_page:
             self.print(Rule("[bold cyan]Listing Profiles"), width=80)
         else:
             self.print("[blue]Loading profiles...⏳")
 
-        # Get current screen totals
-        _profiles = profiles or listdir(self.profile_dir)
-        if len(_profiles) >=4:
-            if num_rendered == 0:
-                current = "1-4"
-            else:
-                current = f"{num_rendered + 1}-{num_rendered + 4}"
-        elif num_rendered == 0:
-                current = f"1-{len(_profiles)}"
-        else:
-            current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
-        total = self.num_profiles  # total profiles
+        # Get current screen totals based on what's passed in and render count
+        profiles = profiles or listdir(self.profile_dir)
+        num_profiles = len(profiles)
+        current = self._get_page_count(num_profiles, num_rendered)
 
         # Turn each Profile() into a renderable Table()
         # NOTE: max 2x2 (4) per page (width=37)
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max+1)))]
         tables: dict[str, Table] = {}
-        for num, _profile in zip(choices, _profiles[:4]):
+        for num, _profile in zip(choices, profiles[:4]):
             profile: Profile = self._load_profile(_profile)
             # Truncate text to match profile window size with room for options
             title = Text(profile.name)
@@ -274,28 +288,28 @@ class Cli(Console):
         # NOTE We create rows by taking advantage of the display's built-in
         # wrapping to our set width of 80 char. This allows us to avoid
         # creating a Group() of Panel() of Columns()
-        self.print(Panel(Columns((tables[data]["table"] for data in tables)),
-                         title=f"[bold cyan]Profiles ({current}/{total})",
-                         width=80))
+        self.print(Panel(
+                Columns((tables[data]["table"] for data in tables)),
+                title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
+                width=80))
 
         # Handle user choice and menu navigation
         msg = "Enter a [green]number[/] to select the corresponding profile.\n"
         msg += "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
-        if len(_profiles) > 4:  # Add pagination prompt
+        if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
-            user_choice = Prompt.ask(msg,
-                                     choices=choices + ['P', 'Q'],
+            user_choice = Prompt.ask(msg, choices=choices + ['P', 'Q'],
                                      case_sensitive=False, default='P')
         else:
-            user_choice = Prompt.ask(msg,
-                                     choices=choices + ['Q'],
+            user_choice = Prompt.ask(msg, choices=choices + ['Q'],
                                      case_sensitive=False, default='Q')
+
         # Set the selected profile and return to main menu
         if user_choice in choices:
             self.profile = tables[user_choice]["profile"]
         # Use recursion to paginate as needed (4 per page)
-        elif user_choice.lower() == 'p' and len(_profiles) > 4:
-            return self.list_profiles(profiles=_profiles[4:],
+        elif user_choice.lower() == 'p' and num_profiles > 4:
+            return self.list_profiles(profiles=profiles[4:],
                                       num_rendered=num_rendered+4)
 
     def _validate_int_prompt(self, prompt: str,
