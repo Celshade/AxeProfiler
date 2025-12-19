@@ -241,6 +241,22 @@ class Cli(Console):
         else:
             return f"{num_rendered + 1}-{num_rendered + num_profiles}"
 
+    def _build_profile_list_view(self, choices: list[str], profiles: list[str]):
+        tables: dict[str, Table] = {}
+
+        for num, _profile in zip(choices, profiles):
+            profile: Profile = self._load_profile(_profile)
+            # Truncate text to match profile window size with room for options
+            title = Text(profile.name)
+            title.truncate(max_width=32, overflow="ellipsis")
+            tables[num] = {
+                "profile": profile,
+                "table": Table(str(profile),
+                               title=f"[green][{num}] [bold magenta]{title}",
+                               width=37)
+            }
+        # self.print(tables)  # Testing
+        return tables
 
     def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0, first_page: bool = False) -> None:
@@ -270,19 +286,7 @@ class Cli(Console):
         # NOTE: max 2x2 (4) per page (width=37)
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max+1)))]
-        tables: dict[str, Table] = {}
-        for num, _profile in zip(choices, profiles[:4]):
-            profile: Profile = self._load_profile(_profile)
-            # Truncate text to match profile window size with room for options
-            title = Text(profile.name)
-            title.truncate(max_width=32, overflow="ellipsis")
-            tables[num] = {
-                "profile": profile,
-                "table": Table(str(profile),
-                               title=f"[green][{num}] [bold magenta]{title}",
-                               width=37)
-            }
-        # self.print(tables)  # Testing
+        tables = self._build_profile_list_view(choices, profiles[:4])
 
         # Render the profiles
         # NOTE We create rows by taking advantage of the display's built-in
