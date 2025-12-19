@@ -282,24 +282,31 @@ class Cli(Console):
         num_profiles = len(profiles)
         current = self._get_page_count(num_profiles, num_rendered)
 
-        # Turn each Profile() into a renderable Table()
-        # NOTE: max 2x2 (4) per page (width=37)
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max+1)))]
-        tables = self._build_profile_list_view(choices, profiles[:4])
 
-        # Render the profiles
-        # NOTE We create rows by taking advantage of the display's built-in
-        # wrapping to our set width of 80 char. This allows us to avoid
-        # creating a Group() of Panel() of Columns()
-        self.print(Panel(
-                Columns((tables[data]["table"] for data in tables)),
-                title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
-                width=80))
+        # Create base message and exit early if needed.
+        if self.num_profiles == 0:
+            msg = "No Profiles. Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
+        else:
+            msg = '\n'.join((
+                "Enter a [green]number[/] to select the corresponding profile.",
+                "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
+            ))
 
-        # Handle user choice and menu navigation
-        msg = "Enter a [green]number[/] to select the corresponding profile.\n"
-        msg += "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
+            # Turn each Profile() into a renderable Table()
+            # NOTE: max 2x2 (4) per page (width=37)
+            tables = self._build_profile_list_view(choices, profiles[:4])
+
+            # Render the profiles
+            # NOTE We create rows by taking advantage of the display's built-in
+            # wrapping to our set width of 80 char. This allows us to avoid
+            # creating a Group() of Panel() of Columns()
+            self.print(Panel(
+                    Columns((tables[data]["table"] for data in tables)),
+                    title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
+                    width=80))
+
         if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
             user_choice = Prompt.ask(msg, choices=choices + ['P', 'Q'],
