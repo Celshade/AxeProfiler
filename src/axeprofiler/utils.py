@@ -1,0 +1,35 @@
+import json
+from os import mkdir, path
+
+from rich import print as rprint
+from rich.console import Console
+
+
+def validate_config():
+    pass
+
+
+def validate_profile_dir(config: dict, config_file: str,
+                         root_dir: str, profile_dir: str) -> str:
+    if not profile_dir:  # Add default profile_dir to config
+        with open(config_file, 'w') as f:
+            config["profile_dir"] = f"{root_dir}.profiles/"
+            f.write(json.dumps(config, indent=4))
+
+        # Make and set default profile_dir
+        _profile_dir = config["profile_dir"]
+        if not path.exists(_profile_dir):
+            mkdir(_profile_dir)
+    else:  # Validate existing profile dir
+        try:
+            assert isinstance(profile_dir, str)
+            # Ensure existing profile_dir
+            if not path.exists(profile_dir):
+                mkdir(profile_dir)
+
+            _profile_dir = profile_dir
+        except AssertionError:
+            msg = "[red]Invalid profile directory configuration"
+            rprint(msg)
+            raise AssertionError("**Program terminated**")  # Exit program
+    return _profile_dir

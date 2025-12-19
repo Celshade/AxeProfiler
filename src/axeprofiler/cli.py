@@ -34,6 +34,7 @@ from rich.prompt import Prompt, Confirm
 from requests.exceptions import ConnectTimeout
 
 from axeprofiler.profiles import Profile
+from axeprofiler.utils import validate_config, validate_profile_dir
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
@@ -68,6 +69,7 @@ class Cli(Console):
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
         self.__config: str  = f"{self.__root}.config"  # program config
+        self.__profile_dir: str = None
         self._profile: Profile = None  # Currently selected Profile
 
         with Progress() as progress:  # Start progress bar
@@ -88,32 +90,13 @@ class Cli(Console):
             # Validate profile_dir
             progress.update(config_task, advance=25)
             profile_task = progress.add_task("[blue]Validating profiles...")
-            try:
-                profile_dir = config.get("profile_dir")
-                progress.update(profile_task, advance=30)
-
-                if not profile_dir:  # Add default profile_dir to config
-                    with open(self.__config, 'w') as f:
-                        config["profile_dir"] = f"{self.__root}.profiles/"
-                        f.write(json.dumps(config, indent=4))
-
-                    # Make and set default profile_dir
-                    self.__profile_dir = config["profile_dir"]
-                    if not path.exists(self.__profile_dir):
-                        mkdir(self.__profile_dir)
-                else:  # Validate existing profile dir
-                    assert isinstance(profile_dir, str)
-
-                    # Ensure existing profile_dir
-                    if not path.exists(profile_dir):
-                        mkdir(profile_dir)
-
-                    self.__profile_dir = profile_dir  # set profile_dir
-                progress.update(profile_task, advance=70)
-            except AssertionError:
-                msg = "[red]Invalid profile directory configuration"
-                self.print(msg)
-                raise AssertionError("**Program terminated**")  # Exit program
+            progress.update(profile_task, advance=30)
+            profile_dir = config.get("profile_dir")
+            self.__profile_dir = validate_profile_dir(
+                config=config, config_file=self.__config,
+                root_dir=self.__root, profile_dir=self.profile_dir
+            )
+            progress.update(profile_task, advance=70)
 
         self.print("[blue]Starting program...")
         sleep(0.5)  # Pause render before clearing
