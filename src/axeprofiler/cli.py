@@ -21,7 +21,7 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir, remove, name as os_name
+from os import system, path, listdir, remove, name as os_name
 
 from rich.rule import Rule
 from rich.text import Text
@@ -259,7 +259,7 @@ class Cli(Console):
         current = self._get_page_count(num_profiles, num_rendered)
 
         _min, _max = [int(i) for i in current.split('-')]
-        choices = [*map(str, list(range(_min, _max+1)))]
+        choices = [*map(str, list(range(_min, _max + 1)))]  # current page
 
         # Create base message and exit early if needed.
         if self.num_profiles == 0:
@@ -283,21 +283,29 @@ class Cli(Console):
                     title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
                     width=80))
 
+        # # Track previous entries
+        # if _min > 4:
+        #     choices = [*map(str, list(range(1, _max + 1)))]
+
+        # Add menu selection options
+        choices.append('Q')  # Add `quit` option
+        default = 'Q'
         if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
-            user_choice = Prompt.ask(msg, choices=choices + ['P', 'Q'],
-                                     case_sensitive=False, default='P')
-        else:
-            user_choice = Prompt.ask(msg, choices=choices + ['Q'],
-                                     case_sensitive=False, default='Q')
+            choices.insert(-1, 'P')  # Add `page` option
+            default = 'P'
+
+        user_choice = Prompt.ask(msg, choices=choices, default=default,
+                                 case_sensitive=False,
+                                 show_choices=False).lower()
 
         # Set the selected profile and return to main menu
-        if user_choice in choices:
+        if user_choice in choices and user_choice not in ('p', 'q'):
             self.profile = tables[user_choice]["profile"]
         # Use recursion to paginate as needed (4 per page)
-        elif user_choice.lower() == 'p' and num_profiles > 4:
+        elif user_choice == 'p' and num_profiles > 4:
             return self.list_profiles(profiles=profiles[4:],
-                                      num_rendered=num_rendered+4)
+                                      num_rendered=num_rendered + 4)
 
     def _validate_int_prompt(self, prompt: str,
                              default: int, flag: str) -> int | bool:
