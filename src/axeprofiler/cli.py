@@ -68,33 +68,26 @@ class Cli(Console):
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
-        self.__config: str  = f"{self.__root}.config"  # program config
-        self.__profile_dir: str = None
+        # self.__config: str  = f"{self.__root}.config"  # program config
+        self.__profile_dir: str = None  # local profile dir
         self._profile: Profile = None  # Currently selected Profile
 
         with Progress() as progress:  # Start progress bar
             # Validate config file
             config_task = progress.add_task("[blue]Validating config files...")
             progress.update(config_task, advance=25)
+            config = validate_config(root_path=self.__root,
+                                     config_path=f"{self.__root}.config")
+            progress.update(config_task, advance=75)
 
-            # Check for existing config or create one
-            if not path.exists(self.__config):
-                with open(self.__config, 'w') as f:
-                    config = {"profile_dir": f"{self.__root}.profiles/"}
-                    f.write(json.dumps(config, indent=4))
-            else:  # Read existing config
-                progress.update(config_task, advance=50)
-                with open(self.__config, 'r') as f:
-                    config = json.loads(f.read())
 
             # Validate profile_dir
-            progress.update(config_task, advance=25)
             profile_task = progress.add_task("[blue]Validating profiles...")
             progress.update(profile_task, advance=30)
-            profile_dir = config.get("profile_dir")
             self.__profile_dir = validate_profile_dir(
-                config=config, config_file=self.__config,
-                root_dir=self.__root, profile_dir=self.profile_dir
+                config=config,
+                root_path=self.__root,
+                profile_dir=config.get("profile_dir")
             )
             progress.update(profile_task, advance=70)
 

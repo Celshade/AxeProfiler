@@ -4,7 +4,7 @@ from os import mkdir, path
 from rich import print as rprint
 
 
-def validate_config(config_path: str, root_path: str) -> dict[str, str]:
+def validate_config(root_path: str, config_path: str) -> dict[str, str]:
     # Check for existing config or create one
     if not path.exists(config_path):
         with open(config_path, 'w') as f:
@@ -17,11 +17,11 @@ def validate_config(config_path: str, root_path: str) -> dict[str, str]:
     return config
 
 
-def validate_profile_dir(config: dict, config_file: str,
-                         root_dir: str, profile_dir: str) -> str:
+def validate_profile_dir(config: dict[str, str], root_path: str,
+                         profile_dir: str) -> str:
     if not profile_dir:  # Add default profile_dir to config
-        with open(config_file, 'w') as f:
-            config["profile_dir"] = f"{root_dir}.profiles/"
+        with open(f"{root_path}.config", 'w') as f:
+            config["profile_dir"] = f"{root_path}.profiles/"
             f.write(json.dumps(config, indent=4))
 
         # Make and set default profile_dir
