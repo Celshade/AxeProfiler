@@ -577,6 +577,7 @@ class Cli(Console):
             if not profile:
                 raise ValueError
 
+            # TODO Render the selected profile
             # Warning message
             self.print(f"This will [bold red]delete[/] profile: "
                        + f"[magenta]{profile.name}")
@@ -623,6 +624,7 @@ class Cli(Console):
             profile_table = Table(profile.__str__(),
                                 title=f"[bold magenta]{profile.name}", width=50)
             self.print(profile_table)
+            # TODO remove unused var
             user_choice = Prompt.ask("Press [green][Enter][/] to continue",
                                      default="Enter")
             self.print("[blue]Returning to main menu...⏳")
