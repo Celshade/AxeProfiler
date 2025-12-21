@@ -244,9 +244,7 @@ class Cli(Console):
             num_rendered: The number of profiles rendered so far (default=0).
             first_page: Toggle Rule() on first page load (default=False).
         """
-        # TODO next iteration, add filters
-        # TODO add full profile tracking for selection on any page
-
+        # TODO next iteration, add filters/search
         # Operational text
         if first_page:
             self.print(Rule("[bold cyan]Listing Profiles"), width=80)
@@ -261,7 +259,7 @@ class Cli(Console):
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max + 1)))]  # current page
 
-        # Create base message and exit early if needed.
+        # Create base message prompt and render existing profiles
         if self.num_profiles == 0:
             msg = "No Profiles. Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
         else:
@@ -275,37 +273,41 @@ class Cli(Console):
             tables = self._build_profile_list_view(choices, profiles[:4])
 
             # Render the profiles
-            # NOTE We create rows by taking advantage of the display's built-in
-            # wrapping to our set width of 80 char. This allows us to avoid
-            # creating a Group() of Panel() of Columns()
+            # NOTE We create rows by taking advantage of the display's wrapping
+            # to our width; else create Group() of Panel() of Columns()
             self.print(Panel(
                     Columns((tables[data]["table"] for data in tables)),
                     title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
                     width=80))
 
-        # # Track previous entries
-        # if _min > 4:
-        #     choices = [*map(str, list(range(1, _max + 1)))]
-
-        # Add menu selection options
-        choices.append('Q')  # Add `quit` option
+        # Establish sub menu options
+        choices = [*map(str, list(range(1, _max + 1))), 'Q']
         default = 'Q'
         if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
             choices.insert(-1, 'P')  # Add `page` option
             default = 'P'
 
+        # Manually display choices to include elipses w/o breaking selection
+        if self.num_profiles > 1:
+            msg += f" [bold magenta][1...{_max}]"
+
         user_choice = Prompt.ask(msg, choices=choices, default=default,
                                  case_sensitive=False,
                                  show_choices=False).lower()
 
-        # Set the selected profile and return to main menu
-        if user_choice in choices and user_choice not in ('p', 'q'):
-            self.profile = tables[user_choice]["profile"]
         # Use recursion to paginate as needed (4 per page)
-        elif user_choice == 'p' and num_profiles > 4:
+        if user_choice == 'p':
             return self.list_profiles(profiles=profiles[4:],
                                       num_rendered=num_rendered + 4)
+        # Set the selected profile and return to main menu
+        elif user_choice != 'q':
+            if user_choice in tables:
+                self.profile = tables[user_choice]["profile"]
+            else:
+                self.profile = self._load_profile(
+                    listdir(self.profile_dir)[int(user_choice) - 1]
+                )
 
     def _validate_int_prompt(self, prompt: str,
                              default: int, flag: str) -> int | bool:
