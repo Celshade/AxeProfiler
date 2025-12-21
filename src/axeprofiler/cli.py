@@ -31,7 +31,7 @@ from rich.columns import Columns
 from rich.console import Console
 from rich.progress import Progress
 from rich.prompt import Prompt, Confirm
-from requests.exceptions import ConnectTimeout
+from requests.exceptions import ConnectionError
 
 from axeprofiler.profiles import Profile
 from axeprofiler.utils import validate_config, validate_profile_dir
@@ -517,13 +517,12 @@ class Cli(Console):
             profile: The profile to apply.
 
         Raises:
-            ValueError: If no profile is currently selected.
-            ConnectTimeout: If the device cannot be reached.
+            AssertionError: If no profile is currently selected.
+            ConnectionError: If IP cannot be reached or is not AxeOS compliant.
         """
         self.print(Rule("[bold cyan]Running Profile"), width=80)
         try:
-            if not profile:
-                raise ValueError
+            assert profile
 
             # Get IP
             ip = Prompt.ask("Enter target [green]IP address[/] or "
@@ -560,13 +559,65 @@ class Cli(Console):
                 self.print("[blue]Returning to main menu...⏳")
             sleep(0.25)
 
-        except ConnectTimeout:
-            self.print(f"[red]Error[/] connecting to [green]{ip}[/]. "
-                       + "Returning to main menu...⏳")
+        except ConnectionError:
+            self.print(f"[red]Error[/] connecting to [green]{ip}[/]."
+                       + " Check device/IP.\n[blue]Returning to main menu...⏳")
             sleep(1)
-        except ValueError:
+        except AssertionError:
             self.print("No Profile is currently [green]selected")
             sleep(0.25)
+
+    def show_profile(self, profile: Profile = None,
+                     rule: str = None,
+                     message: str | None = None,
+                     choices: list[str] | None = None,
+                     show_choices: bool | None = True,
+                     show_default: bool | None = True,
+                     default: bool | None = False,
+                     prompt: bool | None = False) -> bool | None:
+        """
+        Display the details of the selected profile.
+
+        Renders the profile's configuration in a Rich table and returns `True`
+        or `False` depending on the user's response to any `message` passed in.
+
+        Args:
+            profile: The profile to display.
+            rule: A Rich rule (line separator) (default=None).
+            message: The message confirmation prompt (default=None).
+            choices: A list of available choices (default=None).
+            show_choices: Flag to render choices (default=True).
+            show_default: Flag to render default (default=True).
+            default: The default response to fall back on (default=False).
+            prompt: Flag to render a Rich `prompt` | `confirm` (default=False).
+
+        Returns:
+            Returns nothing and just displays the `profile` if no message is
+        Raises:
+            ValueError: If no profile is currently selected.
+        """
+        if rule:  # Insert line separator
+            self.print(Rule(rule), width=80)
+        try:
+            assert profile
+
+            # Render active profile
+            self.print(Table(str(profile),
+                             title=f"[bold magenta]{profile.name}", width=50))
+
+            if choices:
+                METHOD = Prompt if prompt else Confirm
+                return METHOD.ask(
+                    message,
+                    choices=choices, show_choices=show_choices,
+                    show_default=show_default, default=default,
+                    case_sensitive=False
+                )
+
+        except AssertionError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
+            return
 
     def delete_profile(self, profile: Profile) -> None:
         """
@@ -583,65 +634,28 @@ class Cli(Console):
             FileNotFoundError: If the profile file does not exist.
         """
         try:
-            self.print(Rule("[bold cyan]Deleting Profile"), width=80)
-            if not profile:
-                raise ValueError
-
-            # TODO Render the selected profile
-            # Warning message
-            self.print(f"This will [bold red]delete[/] profile: "
-                       + f"[magenta]{profile.name}")
-            # Confirm before deleting
-            user_choice: bool = Confirm.ask(
-                "[bold red]Do you wish to continue?",
-                case_sensitive=False,
-                default=False
+            # Render the selected profile
+            user_choice: bool = self.show_profile(
+                profile,
+                rule="[bold cyan]Deleting Profile",
+                # Warning message
+                message=f"This will [bold red]delete[/] profile: "
+                       + f"[magenta]{profile.name if profile else 'Error'}"
+                       + "\n[bold red]Do you wish to continue?",
+                choices=['y', 'n'],
             )
             if user_choice:
                 # Delete the config file
                 remove(f"{self.profile_dir}{profile.name}.json")
                 self.profile = None
                 self.print(f"[blue]{profile.name} has been deleted")
-                sleep(1)
+                sleep(0.5)
+            self.print("[blue]Returning to main menu...⏳")
 
-        except ValueError:
-            self.print("No Profile is currently [green]selected")
-            sleep(0.25)
         except FileNotFoundError:
             self.print(f"Error finding profile: [magenta]{profile.name} 🤔")
         except Exception as e:
             print(e)
-
-    def show_profile(self, profile: Profile) -> None:
-        """
-        Display the details of the selected profile.
-
-        Renders the profile's configuration in a Rich table and waits for user
-        input before returning to the main menu.
-
-        Args:
-            profile: The profile to display.
-
-        Raises:
-            ValueError: If no profile is currently selected.
-        """
-        self.print(Rule("[bold cyan]Selected Profile"), width=80)
-        try:
-            if not profile:
-                raise ValueError
-
-            # Render active profile
-            profile_table = Table(profile.__str__(),
-                                title=f"[bold magenta]{profile.name}", width=50)
-            self.print(profile_table)
-            # TODO remove unused var
-            user_choice = Prompt.ask("Press [green][Enter][/] to continue",
-                                     default="Enter")
-            self.print("[blue]Returning to main menu...⏳")
-
-        except ValueError:
-            self.print("No Profile is currently [green]selected")
-            sleep(0.25)
 
     def session(self) -> None:
         """
@@ -696,7 +710,15 @@ class Cli(Console):
             case 's':
                 # Show selected Profile
                 self.print(f"[green][{user_choice}][/] >>> Showing profile")
-                self.show_profile(self.profile)
+                self.show_profile(
+                    profile=self.profile,
+                    rule="[bold cyan]Selected Profile",
+                    message="Press [green][Enter][/] to continue",
+                    choices=["Enter", 'Q'], show_choices=False,
+                    show_default=False, default="Enter",
+                    prompt=True
+                )
+                self.print("[blue]Returning to main menu...⏳")
                 sleep(0.5)
                 self.session()
             case 'm':
