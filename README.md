@@ -39,7 +39,7 @@ is not guaranteed.
 The MAC executables are simply UNIX executable files. There is no specific file
 extension - _they are **Terminal** apps_, and running them is simply a matter of
 retaining (or allowing) the proper file permissions that your system needs to
-execute them. Look for the option that says _"Run in Terminal_."
+execute them. Look for the option that says _"Open with Terminal_."
 
 Executables were created via the Python library [pyinstaller](https://pypi.org/project/pyinstaller/)
 by running the following command on each respective OS:

@@ -217,19 +217,37 @@ class Cli(Console):
         else:
             return f"{num_rendered + 1}-{num_rendered + num_profiles}"
 
-    def _build_profile_list_view(self, choices: list[str], profiles: list[str]):
-        tables: dict[str, Table] = {}
+    def _drop_profile_name(self, profile: Profile) -> dict[str, str | int]:
+        """
+        Return profile data with the `profile_name` removed from the `dict`.
+
+        Used for rendering Profile's as Rich Tables when the name is the title.
+
+        Args:
+            Profile: The Profile in use.
+        """
+        # Remove profile name from render table since it's in title
+        profile_data = profile.data
+        profile_data.pop("profile_name")
+        return profile_data
+
+    def _build_profile_list_view(self, choices: list[str],
+                                 profiles: list[str]) -> dict[str, Table]:
+        tables = {}
 
         for num, _profile in zip(choices, profiles):
             profile: Profile = self._load_profile(_profile)
             # Truncate text to match profile window size with room for options
             title = Text(profile.name)
             title.truncate(max_width=32, overflow="ellipsis")
+            # Create and add to table dict
+            table = Table(title=f"[green][{num}] [bold magenta]{title}",
+                          width=37, show_header=False)
+            table.add_row(json.dumps(self._drop_profile_name(profile),
+                                     indent=4))
             tables[num] = {
                 "profile": profile,
-                "table": Table(str(profile),
-                               title=f"[green][{num}] [bold magenta]{title}",
-                               width=37)
+                "table": table
             }
         # self.print(tables)  # Testing
         return tables
@@ -255,7 +273,6 @@ class Cli(Console):
         profiles = profiles or listdir(self.profile_dir)
         num_profiles = len(profiles)
         current = self._get_page_count(num_profiles, num_rendered)
-
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max + 1)))]  # current page
 
@@ -273,15 +290,15 @@ class Cli(Console):
             tables = self._build_profile_list_view(choices, profiles[:4])
 
             # Render the profiles
-            # NOTE We create rows by taking advantage of the display's wrapping
-            # to our width; else create Group() of Panel() of Columns()
+            # NOTE We create rows by taking advantage of the display's wrapping;
+            # else create Group() of Panel() of Columns()
             self.print(Panel(
                     Columns((tables[data]["table"] for data in tables)),
                     title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
                     width=80))
 
         # Establish sub menu options
-        choices = [*map(str, list(range(1, _max + 1))), 'Q']
+        choices = [*map(str, list(range(1, self.num_profiles + 1))), 'Q']
         default = 'Q'
         if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
@@ -290,7 +307,7 @@ class Cli(Console):
 
         # Manually display choices to include elipses w/o breaking selection
         if self.num_profiles > 1:
-            msg += f" [bold magenta][1...{_max}]"
+            msg += f" [bold magenta][1...{self.num_profiles}]"
 
         user_choice = Prompt.ask(msg, choices=choices, default=default,
                                  case_sensitive=False,
@@ -602,8 +619,11 @@ class Cli(Console):
             assert profile
 
             # Render active profile
-            self.print(Table(str(profile),
-                             title=f"[bold magenta]{profile.name}", width=50))
+            table = Table(title=f"[bold magenta]{profile.name}",
+                          width=50, show_header=False)
+            table.add_row(json.dumps(self._drop_profile_name(profile),
+                                     indent=4))
+            self.print(table)
 
             if choices:
                 METHOD = Prompt if prompt else Confirm
