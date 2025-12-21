@@ -518,8 +518,7 @@ class Cli(Console):
 
         Raises:
             AssertionError: If no profile is currently selected.
-            NewConnectionError: If the IP isn't AxeOS compliant.
-            ConnectTimeout: If the device cannot be reached.
+            ConnectionError: If IP cannot be reached or is not AxeOS compliant.
         """
         self.print(Rule("[bold cyan]Running Profile"), width=80)
         try:
@@ -568,45 +567,8 @@ class Cli(Console):
             self.print("No Profile is currently [green]selected")
             sleep(0.25)
 
-    def delete_profile(self, profile: Profile) -> None:
-        """
-        Delete the specified profile.
-
-        Prompts the user for confirmation before deleting the profile file from
-        disk and clearing the current selection.
-
-        Args:
-            profile: The profile to delete.
-
-        Raises:
-            ValueError: If no profile is currently selected.
-            FileNotFoundError: If the profile file does not exist.
-        """
-        try:
-            # Render the selected profile
-            user_choice: bool = self.show_profile(
-                profile,
-                rule="[bold cyan]Deleting Profile",
-                # Warning message
-                message=f"This will [bold red]delete[/] profile: "
-                       + f"[magenta]{profile.name if profile else 'Error'}"
-                       + "\n[bold red]Do you wish to continue?",
-                choices=['y', 'n'],
-            )
-            if user_choice:
-                # Delete the config file
-                remove(f"{self.profile_dir}{profile.name}.json")
-                self.profile = None
-                self.print(f"[blue]{profile.name} has been deleted")
-                sleep(0.5)
-            self.print("[blue]Returning to main menu...⏳")
-
-        except FileNotFoundError:
-            self.print(f"Error finding profile: [magenta]{profile.name} 🤔")
-        except Exception as e:
-            print(e)
-
-    def show_profile(self, profile: Profile = None, rule: str = None,
+    def show_profile(self, profile: Profile = None,
+                     rule: str = None,
                      message: str | None = None,
                      choices: list[str] | None = None,
                      show_choices: bool | None = True,
@@ -656,6 +618,44 @@ class Cli(Console):
             self.print("No Profile is currently [green]selected")
             sleep(0.25)
             return
+
+    def delete_profile(self, profile: Profile) -> None:
+        """
+        Delete the specified profile.
+
+        Prompts the user for confirmation before deleting the profile file from
+        disk and clearing the current selection.
+
+        Args:
+            profile: The profile to delete.
+
+        Raises:
+            ValueError: If no profile is currently selected.
+            FileNotFoundError: If the profile file does not exist.
+        """
+        try:
+            # Render the selected profile
+            user_choice: bool = self.show_profile(
+                profile,
+                rule="[bold cyan]Deleting Profile",
+                # Warning message
+                message=f"This will [bold red]delete[/] profile: "
+                       + f"[magenta]{profile.name if profile else 'Error'}"
+                       + "\n[bold red]Do you wish to continue?",
+                choices=['y', 'n'],
+            )
+            if user_choice:
+                # Delete the config file
+                remove(f"{self.profile_dir}{profile.name}.json")
+                self.profile = None
+                self.print(f"[blue]{profile.name} has been deleted")
+                sleep(0.5)
+            self.print("[blue]Returning to main menu...⏳")
+
+        except FileNotFoundError:
+            self.print(f"Error finding profile: [magenta]{profile.name} 🤔")
+        except Exception as e:
+            print(e)
 
     def session(self) -> None:
         """
