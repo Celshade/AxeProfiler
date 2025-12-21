@@ -241,13 +241,13 @@ class Cli(Console):
             title = Text(profile.name)
             title.truncate(max_width=32, overflow="ellipsis")
             # Create and add to table dict
+            table = Table(title=f"[green][{num}] [bold magenta]{title}",
+                          width=37, show_header=False)
+            table.add_row(json.dumps(self._drop_profile_name(profile),
+                                     indent=4))
             tables[num] = {
                 "profile": profile,
-                "table": Table(
-                    json.dumps(self._drop_profile_name(profile), indent=4),
-                    title=f"[green][{num}] [bold magenta]{title}",
-                    width=37
-                )
+                "table": table
             }
         # self.print(tables)  # Testing
         return tables
@@ -619,10 +619,11 @@ class Cli(Console):
             assert profile
 
             # Render active profile
-            self.print(Table(
-                json.dumps(self._drop_profile_name(profile), indent=4),
-                title=f"[bold magenta]{profile.name}", width=50
-            ))
+            table = Table(title=f"[bold magenta]{profile.name}",
+                          width=50, show_header=False)
+            table.add_row(json.dumps(self._drop_profile_name(profile),
+                                     indent=4))
+            self.print(table)
 
             if choices:
                 METHOD = Prompt if prompt else Confirm
