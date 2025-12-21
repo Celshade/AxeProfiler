@@ -30,8 +30,8 @@ from rich.table import Table
 from rich.columns import Columns
 from rich.console import Console
 from rich.progress import Progress
-from rich.prompt import Prompt, Confirm, InvalidResponse
-from requests.exceptions import ConnectTimeout
+from rich.prompt import Prompt, Confirm
+from requests.exceptions import ConnectionError
 
 from axeprofiler.profiles import Profile
 from axeprofiler.utils import validate_config, validate_profile_dir
@@ -517,13 +517,13 @@ class Cli(Console):
             profile: The profile to apply.
 
         Raises:
-            ValueError: If no profile is currently selected.
+            AssertionError: If no profile is currently selected.
+            NewConnectionError: If the IP isn't AxeOS compliant.
             ConnectTimeout: If the device cannot be reached.
         """
         self.print(Rule("[bold cyan]Running Profile"), width=80)
         try:
-            if not profile:
-                raise ValueError
+            assert profile
 
             # Get IP
             ip = Prompt.ask("Enter target [green]IP address[/] or "
@@ -560,11 +560,11 @@ class Cli(Console):
                 self.print("[blue]Returning to main menu...⏳")
             sleep(0.25)
 
-        except ConnectTimeout:
-            self.print(f"[red]Error[/] connecting to [green]{ip}[/]. "
-                       + "Returning to main menu...⏳")
+        except ConnectionError:
+            self.print(f"[red]Error[/] connecting to [green]{ip}[/]."
+                       + " Check device/IP.\n[blue]Returning to main menu...⏳")
             sleep(1)
-        except ValueError:
+        except AssertionError:
             self.print("No Profile is currently [green]selected")
             sleep(0.25)
 
