@@ -217,19 +217,37 @@ class Cli(Console):
         else:
             return f"{num_rendered + 1}-{num_rendered + num_profiles}"
 
-    def _build_profile_list_view(self, choices: list[str], profiles: list[str]):
-        tables: dict[str, Table] = {}
+    def _drop_profile_name(self, profile: Profile) -> dict[str, str | int]:
+        """
+        Return profile data with the `profile_name` removed from the `dict`.
+
+        Used for rendering Profile's as Rich Tables when the name is the title.
+
+        Args:
+            Profile: The Profile in use.
+        """
+        # Remove profile name from render table since it's in title
+        profile_data = profile.data
+        profile_data.pop("profile_name")
+        return profile_data
+
+    def _build_profile_list_view(self, choices: list[str],
+                                 profiles: list[str]) -> dict[str, Table]:
+        tables = {}
 
         for num, _profile in zip(choices, profiles):
             profile: Profile = self._load_profile(_profile)
             # Truncate text to match profile window size with room for options
             title = Text(profile.name)
             title.truncate(max_width=32, overflow="ellipsis")
+            # Create and add to table dict
             tables[num] = {
                 "profile": profile,
-                "table": Table(str(profile),
-                               title=f"[green][{num}] [bold magenta]{title}",
-                               width=37)
+                "table": Table(
+                    json.dumps(self._drop_profile_name(profile), indent=4),
+                    title=f"[green][{num}] [bold magenta]{title}",
+                    width=37
+                )
             }
         # self.print(tables)  # Testing
         return tables
@@ -601,8 +619,10 @@ class Cli(Console):
             assert profile
 
             # Render active profile
-            self.print(Table(str(profile),
-                             title=f"[bold magenta]{profile.name}", width=50))
+            self.print(Table(
+                json.dumps(self._drop_profile_name(profile), indent=4),
+                title=f"[bold magenta]{profile.name}", width=50
+            ))
 
             if choices:
                 METHOD = Prompt if prompt else Confirm
