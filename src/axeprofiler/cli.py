@@ -21,7 +21,7 @@ import json
 from time import sleep
 from time import sleep
 from typing import TypeAlias
-from os import system, path, mkdir, listdir, remove, name as os_name
+from os import system, path, listdir, remove, name as os_name
 
 from rich.rule import Rule
 from rich.text import Text
@@ -34,6 +34,7 @@ from rich.prompt import Prompt, Confirm
 from requests.exceptions import ConnectTimeout
 
 from axeprofiler.profiles import Profile
+from axeprofiler.utils import validate_config, validate_profile_dir
 
 
 CONFIG: TypeAlias = dict[str, str | int]  # config obj format
@@ -67,53 +68,28 @@ class Cli(Console):
     def __init__(self) -> None:
         super().__init__()  # Inherit Console() ability to render/color
         self.__root: str  = __file__.split("src")[0]  # program root
-        self.__config: str  = f"{self.__root}.config"  # program config
+        # self.__config: str  = f"{self.__root}.config"  # program config
+        self.__profile_dir: str = None  # local profile dir
         self._profile: Profile = None  # Currently selected Profile
 
         with Progress() as progress:  # Start progress bar
             # Validate config file
             config_task = progress.add_task("[blue]Validating config files...")
             progress.update(config_task, advance=25)
+            config = validate_config(root_path=self.__root,
+                                     config_path=f"{self.__root}.config")
+            progress.update(config_task, advance=75)
 
-            # Check for existing config or create one
-            if not path.exists(self.__config):
-                with open(self.__config, 'w') as f:
-                    config = {"profile_dir": f"{self.__root}.profiles/"}
-                    f.write(json.dumps(config, indent=4))
-            else:  # Read existing config
-                progress.update(config_task, advance=50)
-                with open(self.__config, 'r') as f:
-                    config = json.loads(f.read())
 
             # Validate profile_dir
-            progress.update(config_task, advance=25)
             profile_task = progress.add_task("[blue]Validating profiles...")
-            try:
-                profile_dir = config.get("profile_dir")
-                progress.update(profile_task, advance=30)
-
-                if not profile_dir:  # Add default profile_dir to config
-                    with open(self.__config, 'w') as f:
-                        config["profile_dir"] = f"{self.__root}.profiles/"
-                        f.write(json.dumps(config, indent=4))
-
-                    # Make and set default profile_dir
-                    self.__profile_dir = config["profile_dir"]
-                    if not path.exists(self.__profile_dir):
-                        mkdir(self.__profile_dir)
-                else:  # Validate existing profile dir
-                    assert isinstance(profile_dir, str)
-
-                    # Ensure existing profile_dir
-                    if not path.exists(profile_dir):
-                        mkdir(profile_dir)
-
-                    self.__profile_dir = profile_dir  # set profile_dir
-                progress.update(profile_task, advance=70)
-            except AssertionError:
-                msg = "[red]Invalid profile directory configuration"
-                self.print(msg)
-                raise AssertionError("**Program terminated**")  # Exit program
+            progress.update(profile_task, advance=30)
+            self.__profile_dir = validate_profile_dir(
+                config=config,
+                root_path=self.__root,
+                profile_dir=config.get("profile_dir")
+            )
+            progress.update(profile_task, advance=70)
 
         self.print("[blue]Starting program...")
         sleep(0.5)  # Pause render before clearing
@@ -222,6 +198,42 @@ class Cli(Console):
         except Exception as e:
             print(e)
 
+    def _get_page_count(self, num_profiles: int, num_rendered: int) -> str:
+        """
+        Return a str display of x-y profile count for the current page being
+        listed by `list_profiles()`. i.e. 1-4, 5-8, etc
+
+        Args:
+            num_profiles: The number of profiles.
+            num_rendered: The number of profiles rendered so far.
+        """
+        if num_profiles >=4:
+            if num_rendered == 0:
+                return "1-4"
+            else:
+                return f"{num_rendered + 1}-{num_rendered + 4}"
+        elif num_rendered == 0:
+                return f"0-0" if num_profiles == 0 else f"1-{num_profiles}"
+        else:
+            return f"{num_rendered + 1}-{num_rendered + num_profiles}"
+
+    def _build_profile_list_view(self, choices: list[str], profiles: list[str]):
+        tables: dict[str, Table] = {}
+
+        for num, _profile in zip(choices, profiles):
+            profile: Profile = self._load_profile(_profile)
+            # Truncate text to match profile window size with room for options
+            title = Text(profile.name)
+            title.truncate(max_width=32, overflow="ellipsis")
+            tables[num] = {
+                "profile": profile,
+                "table": Table(str(profile),
+                               title=f"[green][{num}] [bold magenta]{title}",
+                               width=37)
+            }
+        # self.print(tables)  # Testing
+        return tables
+
     def list_profiles(self, profiles: list[str] | None = None,
                       num_rendered: int = 0, first_page: bool = False) -> None:
         """
@@ -232,71 +244,70 @@ class Cli(Console):
             num_rendered: The number of profiles rendered so far (default=0).
             first_page: Toggle Rule() on first page load (default=False).
         """
-        # TODO next iteration, add filters
-        # TODO add full profile tracking for selection on any page
+        # TODO next iteration, add filters/search
+        # Operational text
         if first_page:
             self.print(Rule("[bold cyan]Listing Profiles"), width=80)
         else:
             self.print("[blue]Loading profiles...⏳")
 
-        # Get current screen totals
-        _profiles = profiles or listdir(self.profile_dir)
-        if len(_profiles) >=4:
-            if num_rendered == 0:
-                current = "1-4"
-            else:
-                current = f"{num_rendered + 1}-{num_rendered + 4}"
-        elif num_rendered == 0:
-                current = f"1-{len(_profiles)}"
-        else:
-            current = f"{num_rendered + 1}-{num_rendered + len(_profiles)}"
-        total = self.num_profiles  # total profiles
+        # Get current screen totals based on what's passed in and render count
+        profiles = profiles or listdir(self.profile_dir)
+        num_profiles = len(profiles)
+        current = self._get_page_count(num_profiles, num_rendered)
 
-        # Turn each Profile() into a renderable Table()
-        # NOTE: max 2x2 (4) per page (width=37)
         _min, _max = [int(i) for i in current.split('-')]
-        choices = [*map(str, list(range(_min, _max+1)))]
-        tables: dict[str, Table] = {}
-        for num, _profile in zip(choices, _profiles[:4]):
-            profile: Profile = self._load_profile(_profile)
-            # Truncate text to match profile window size with room for options
-            title = Text(profile.name)
-            title.truncate(max_width=32, overflow="ellipsis")
-            tables[num] = {
-                "profile": profile,
-                "table": Table(profile.__str__(),
-                               title=f"[green][{num}] [bold magenta]{title}",
-                               width=37)
-            }
-        # self.print(tables)  # Testing
+        choices = [*map(str, list(range(_min, _max + 1)))]  # current page
 
-        # Render the profiles
-        # NOTE We create rows by taking advantage of the display's built-in
-        # wrapping to our set width of 80 char. This allows us to avoid
-        # creating a Group() of Panel() of Columns()
-        self.print(Panel(Columns((tables[data]["table"] for data in tables)),
-                         title=f"[bold cyan]Profiles ({current}/{total})",
-                         width=80))
-
-        # Handle user choice and menu navigation
-        msg = "Enter a [green]number[/] to select the corresponding profile.\n"
-        msg += "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
-        if len(_profiles) > 4:  # Add pagination prompt
-            msg += " or [green][P][/] to see more profiles"
-            user_choice = Prompt.ask(msg,
-                                     choices=choices + ['P', 'Q'],
-                                     case_sensitive=False, default='P')
+        # Create base message prompt and render existing profiles
+        if self.num_profiles == 0:
+            msg = "No Profiles. Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
         else:
-            user_choice = Prompt.ask(msg,
-                                     choices=choices + ['Q'],
-                                     case_sensitive=False, default='Q')
-        # Set the selected profile and return to main menu
-        if user_choice in choices:
-            self.profile = tables[user_choice]["profile"]
+            msg = '\n'.join((
+                "Enter a [green]number[/] to select the corresponding profile.",
+                "Enter [red][Q][/] to quit to [cyan]Main Menu[/]"
+            ))
+
+            # Turn each Profile() into a renderable Table()
+            # NOTE: max 2x2 (4) per page (width=37)
+            tables = self._build_profile_list_view(choices, profiles[:4])
+
+            # Render the profiles
+            # NOTE We create rows by taking advantage of the display's wrapping
+            # to our width; else create Group() of Panel() of Columns()
+            self.print(Panel(
+                    Columns((tables[data]["table"] for data in tables)),
+                    title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
+                    width=80))
+
+        # Establish sub menu options
+        choices = [*map(str, list(range(1, _max + 1))), 'Q']
+        default = 'Q'
+        if num_profiles > 4:  # Add pagination prompt
+            msg += " or [green][P][/] to see more profiles"
+            choices.insert(-1, 'P')  # Add `page` option
+            default = 'P'
+
+        # Manually display choices to include elipses w/o breaking selection
+        if self.num_profiles > 1:
+            msg += f" [bold magenta][1...{_max}]"
+
+        user_choice = Prompt.ask(msg, choices=choices, default=default,
+                                 case_sensitive=False,
+                                 show_choices=False).lower()
+
         # Use recursion to paginate as needed (4 per page)
-        elif user_choice.lower() == 'p' and len(_profiles) > 4:
-            return self.list_profiles(profiles=_profiles[4:],
-                                      num_rendered=num_rendered+4)
+        if user_choice == 'p':
+            return self.list_profiles(profiles=profiles[4:],
+                                      num_rendered=num_rendered + 4)
+        # Set the selected profile and return to main menu
+        elif user_choice != 'q':
+            if user_choice in tables:
+                self.profile = tables[user_choice]["profile"]
+            else:
+                self.profile = self._load_profile(
+                    listdir(self.profile_dir)[int(user_choice) - 1]
+                )
 
     def _validate_int_prompt(self, prompt: str,
                              default: int, flag: str) -> int | bool:
@@ -576,6 +587,7 @@ class Cli(Console):
             if not profile:
                 raise ValueError
 
+            # TODO Render the selected profile
             # Warning message
             self.print(f"This will [bold red]delete[/] profile: "
                        + f"[magenta]{profile.name}")
@@ -622,6 +634,7 @@ class Cli(Console):
             profile_table = Table(profile.__str__(),
                                 title=f"[bold magenta]{profile.name}", width=50)
             self.print(profile_table)
+            # TODO remove unused var
             user_choice = Prompt.ask("Press [green][Enter][/] to continue",
                                      default="Enter")
             self.print("[blue]Returning to main menu...⏳")
