@@ -255,7 +255,6 @@ class Cli(Console):
         profiles = profiles or listdir(self.profile_dir)
         num_profiles = len(profiles)
         current = self._get_page_count(num_profiles, num_rendered)
-
         _min, _max = [int(i) for i in current.split('-')]
         choices = [*map(str, list(range(_min, _max + 1)))]  # current page
 
@@ -273,15 +272,15 @@ class Cli(Console):
             tables = self._build_profile_list_view(choices, profiles[:4])
 
             # Render the profiles
-            # NOTE We create rows by taking advantage of the display's wrapping
-            # to our width; else create Group() of Panel() of Columns()
+            # NOTE We create rows by taking advantage of the display's wrapping;
+            # else create Group() of Panel() of Columns()
             self.print(Panel(
                     Columns((tables[data]["table"] for data in tables)),
                     title=f"[bold cyan]Profiles ({current}/{self.num_profiles})",
                     width=80))
 
         # Establish sub menu options
-        choices = [*map(str, list(range(1, _max + 1))), 'Q']
+        choices = [*map(str, list(range(1, self.num_profiles + 1))), 'Q']
         default = 'Q'
         if num_profiles > 4:  # Add pagination prompt
             msg += " or [green][P][/] to see more profiles"
@@ -290,7 +289,7 @@ class Cli(Console):
 
         # Manually display choices to include elipses w/o breaking selection
         if self.num_profiles > 1:
-            msg += f" [bold magenta][1...{_max}]"
+            msg += f" [bold magenta][1...{self.num_profiles}]"
 
         user_choice = Prompt.ask(msg, choices=choices, default=default,
                                  case_sensitive=False,
