@@ -410,12 +410,67 @@ class Cli(Console):
         # Render defaults for supra, gamma, nerd++
         default_tables = []
         for model in DEFAULTS:
-            default_tables.append(
-                Table(json.dumps(DEFAULTS[model], indent=4),
-                        title=f"[bold magenta]{model}", width=37)
-            )
+            table = Table(title=f"[bold magenta]{model}",
+                          width=37, show_header=False)
+            table.add_row(json.dumps(DEFAULTS[model], indent=4))
+            default_tables.append(table)
         self.print(Panel(Columns(default_tables),
-                                    title="[bold cyan]Defaults", width=80))
+                         title="[bold cyan]Defaults", width=80))
+
+    def show_profile(self, profile: Profile = None,
+                     rule: str = None,
+                     message: str | None = None,
+                     choices: list[str] | None = None,
+                     show_choices: bool | None = True,
+                     show_default: bool | None = True,
+                     default: bool | None = False,
+                     prompt: bool | None = False) -> bool | None:
+        """
+        Display the details of the selected profile.
+
+        Renders the profile's configuration in a Rich table and returns `True`
+        or `False` depending on the user's response to any `message` passed in.
+
+        Args:
+            profile: The profile to display.
+            rule: A Rich rule (line separator) (default=None).
+            message: The message confirmation prompt (default=None).
+            choices: A list of available choices (default=None).
+            show_choices: Flag to render choices (default=True).
+            show_default: Flag to render default (default=True).
+            default: The default response to fall back on (default=False).
+            prompt: Flag to render a Rich `prompt` | `confirm` (default=False).
+
+        Returns:
+            Returns nothing and just displays the `profile` if no message is
+        Raises:
+            ValueError: If no profile is currently selected.
+        """
+        if rule:  # Insert line separator
+            self.print(Rule(rule), width=80)
+        try:
+            assert profile
+
+            # Render active profile
+            table = Table(title=f"[bold magenta]{profile.name}",
+                          width=50, show_header=False)
+            table.add_row(json.dumps(self._drop_profile_name(profile),
+                                     indent=4))
+            self.print(table)
+
+            if choices:
+                METHOD = Prompt if prompt else Confirm
+                return METHOD.ask(
+                    message,
+                    choices=choices, show_choices=show_choices,
+                    show_default=show_default, default=default,
+                    case_sensitive=False
+                )
+
+        except AssertionError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
+            return
 
     def create_profile(self) -> Profile | None:
         """
@@ -440,10 +495,8 @@ class Cli(Console):
 
         try:
             # Render created profile
-            new_profile = Table(profile.__str__(),
-                                title=f"[bold magenta]{profile.name}", width=50)
             print()
-            self.print(new_profile)
+            self.show_profile(profile)
             # Confirm before saving else create another profile
             user_choice = Confirm.ask("[bold green]Create[/] this profile?")
             if not user_choice:
@@ -583,61 +636,6 @@ class Cli(Console):
         except AssertionError:
             self.print("No Profile is currently [green]selected")
             sleep(0.25)
-
-    def show_profile(self, profile: Profile = None,
-                     rule: str = None,
-                     message: str | None = None,
-                     choices: list[str] | None = None,
-                     show_choices: bool | None = True,
-                     show_default: bool | None = True,
-                     default: bool | None = False,
-                     prompt: bool | None = False) -> bool | None:
-        """
-        Display the details of the selected profile.
-
-        Renders the profile's configuration in a Rich table and returns `True`
-        or `False` depending on the user's response to any `message` passed in.
-
-        Args:
-            profile: The profile to display.
-            rule: A Rich rule (line separator) (default=None).
-            message: The message confirmation prompt (default=None).
-            choices: A list of available choices (default=None).
-            show_choices: Flag to render choices (default=True).
-            show_default: Flag to render default (default=True).
-            default: The default response to fall back on (default=False).
-            prompt: Flag to render a Rich `prompt` | `confirm` (default=False).
-
-        Returns:
-            Returns nothing and just displays the `profile` if no message is
-        Raises:
-            ValueError: If no profile is currently selected.
-        """
-        if rule:  # Insert line separator
-            self.print(Rule(rule), width=80)
-        try:
-            assert profile
-
-            # Render active profile
-            table = Table(title=f"[bold magenta]{profile.name}",
-                          width=50, show_header=False)
-            table.add_row(json.dumps(self._drop_profile_name(profile),
-                                     indent=4))
-            self.print(table)
-
-            if choices:
-                METHOD = Prompt if prompt else Confirm
-                return METHOD.ask(
-                    message,
-                    choices=choices, show_choices=show_choices,
-                    show_default=show_default, default=default,
-                    case_sensitive=False
-                )
-
-        except AssertionError:
-            self.print("No Profile is currently [green]selected")
-            sleep(0.25)
-            return
 
     def delete_profile(self, profile: Profile) -> None:
         """
