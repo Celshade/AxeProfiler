@@ -419,6 +419,7 @@ class Cli(Console):
 
     def show_profile(self, profile: Profile = None,
                      rule: str = None,
+                     title: str = None,
                      message: str | None = None,
                      choices: list[str] | None = None,
                      show_choices: bool | None = True,
@@ -452,7 +453,8 @@ class Cli(Console):
             assert profile
 
             # Render active profile
-            table = Table(title=f"[bold magenta]{profile.name}",
+            title = title or f"[bold magenta]{profile.name}"
+            table = Table(title=title,
                           width=50, show_header=False)
             table.add_row(json.dumps(self._drop_profile_name(profile),
                                      indent=4))
@@ -521,39 +523,47 @@ class Cli(Console):
         Args:
             profile: The profile to update.
         """
+        # TODO Cleanup and consolidate Error Handling
         self.print(Rule("[bold cyan]Updating Profile"), width=80)
         try:
-            if not profile:
-                raise ValueError
+            assert profile
 
             # Render the selected profile
-            self.print(Table(
-                self.profile.__str__(),
-                title=f"[bold magenta]{self.profile.name}[/] (current)",
-                width=50)
+            self.show_profile(
+                profile,
+                title=f"[bold magenta]{self.profile.name}[/] (current)"
             )
+        except AssertionError:
+            self.print("No Profile is currently [green]selected")
+            sleep(0.25)
+            return
 
+        try:
             # Create a new profile to override selected with
             new_profile = Profile.create_profile(
                 self._get_profile_config(retain_name=profile.name)
             )
 
-        except ValueError:
-            self.print("No Profile is currently [green]selected")
-            sleep(0.25)
-            return
         except AssertionError:  # _get_profile_config() will raise to escape
             self.print("[blue]Canceling profile creation...⏳")
             sleep(0.25)
             return
 
         try:
-            # Render current config vs selected profile # TODO breakout
             print()
-            selected = Table(profile.__str__(),
-                             title=f"[bold magenta]{profile.name}", width=37)
-            updated = Table(new_profile.__str__(),
-                           title=f"[bold magenta]{new_profile.name}", width=37)
+            # Create a Table of the Selected Profile
+            profile_data = json.dumps(self._drop_profile_name(profile),
+                                      indent=4)
+            selected = Table(title=f"[bold magenta]{profile.name}", width=37,
+                             show_header=False)
+            selected.add_row(profile_data)
+            # Create a Table of the Updated Profile
+            new_profile_data = json.dumps(self._drop_profile_name(profile),
+                                          indent=4)
+            updated = Table(title=f"[bold magenta]{new_profile.name}", width=37,
+                            show_header=False)
+            updated.add_row(new_profile_data)
+            # Render the two versions of the profile side by side
             self.print(Columns([selected, "[bold green]->", updated]))
 
             # Confirm before saving else re-rerun the update process
