@@ -7,7 +7,7 @@ from axeprofiler.cli import Cli
 
 # NOTE `tmp_path` is a pytest built-in that creates a per-test tmp dir
 # breaks in a class for some reason - returns a list instead of str path
-def test_no_profiles(tmp_path, capsys):
+def test_no_profiles(tmp_path, mock_q, capsys):
     with TempConfig(str(tmp_path.joinpath())) as temp:
         assert os.path.exists(".config")
         assert os.path.exists(".config.backup")
@@ -16,9 +16,8 @@ def test_no_profiles(tmp_path, capsys):
 
         cli = Cli()
         assert cli.num_profiles == 0
-        # cli.list_profiles(first_page=True)
+        cli.list_profiles(first_page=True)
         # print(capsys.readouterr())
-        # assert 0
 
 
 # def test_list_one_page():
