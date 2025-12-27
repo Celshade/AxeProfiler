@@ -1,3 +1,6 @@
+"""
+A module of pytest fixtures that mock AxeProfiler user input
+"""
 import unittest.mock
 from io import StringIO
 
