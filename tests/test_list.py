@@ -24,7 +24,7 @@ def test_no_profiles(tmp_path, mock_q, capsys):
 
         # Test for no [P] (page) option
         out = str(capsys.readouterr())
-        assert "Enter [P]" not in out
+        assert "[P]" not in out
 
 
 def test_list_one_page(tmp_path, mock_q, capsys):
@@ -40,10 +40,23 @@ def test_list_one_page(tmp_path, mock_q, capsys):
 
         # Test for no [P] (page) option
         out = str(capsys.readouterr())
-        assert "Enter [P]" not in out
+        assert "[P]" not in out
         # assert 0  # NOTE testing
 
 
+def test_list_mul_page(tmp_path, mock_q, capsys):
+    path = str(tmp_path.joinpath()) + '/'
+    # print(path)  # NOTE testing
+    with TempConfig(path, 5):
+        # print(os.listdir(path))  # NOTE testing
+        # Test for more than 1 page (4 per page)
+        cli = Cli()
+        assert cli.profile_dir == path
+        assert cli.num_profiles > 4
+        cli.list_profiles(first_page=True)
 
-# def test_list_mul_page():
-#     raise NotImplementedError
+        # Test for [P] (page) option
+        out = str(capsys.readouterr())
+        # print(out)  # NOTE testing
+        assert "[P]" in out
+        # assert 0  # NOTE testing
