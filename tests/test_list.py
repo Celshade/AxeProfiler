@@ -62,7 +62,7 @@ def test_list_mul_page_q(tmp_path, mock_q, capsys):
         # assert 0  # NOTE testing
 
 
-def test_list_mul_page_7(tmp_path, mock_p, mock_7, capsys):
+def test_list_mul_page_7(tmp_path, mock_7, capsys):
     path = str(tmp_path.joinpath()) + '/'
     # print(path)  # NOTE testing
     with TempConfig(path, 7):
@@ -71,12 +71,13 @@ def test_list_mul_page_7(tmp_path, mock_p, mock_7, capsys):
         cli = Cli()
         assert cli.profile_dir == path
         assert cli.num_profiles == 7
-        cli.list_profiles(first_page=True)
+        cli.list_profiles(profiles=os.listdir(cli.profile_dir)[4:],
+                          num_rendered=4)
 
         # Test for [P] (page) option removed due to prompt clear on final page
         out = str(capsys.readouterr())
         print(out)  # NOTE testing
-        # assert "[P]" in out
+        assert "[P]" not in out
         # assert 0  # NOTE testing
 
 
@@ -98,8 +99,7 @@ def test_list_mul_page_select_forward(tmp_path, mock_7, capsys):
         # assert 0  # NOTE testing
 
 
-# NOTE consecutive mocked inputs confirmed to work in arg-sequence
-def test_list_mul_page_select_retro(tmp_path, mock_p, mock_1, capsys):
+def test_list_mul_page_select_retro(tmp_path, mock_1, capsys):
     path = str(tmp_path.joinpath()) + '/'
     # print(path)  # NOTE testing
     with TempConfig(path, 5):
@@ -108,11 +108,14 @@ def test_list_mul_page_select_retro(tmp_path, mock_p, mock_1, capsys):
         cli = Cli()
         assert cli.profile_dir == path
         assert cli.num_profiles == 5
-        cli.list_profiles(first_page=True)
+        cli.list_profiles(profiles=os.listdir(cli.profile_dir)[4:],
+                          num_rendered=4)
 
         # Test successful pagination and retro selection
         out = str(capsys.readouterr())
-        # print(out)  # NOTE testing
+        print(out)  # NOTE testing
+        assert "[P]" not in out
+
         assert cli.profile
         assert cli.profile.name == os.listdir(cli.profile_dir)[0].split('.')[0]
         # assert 0  # NOTE testing
