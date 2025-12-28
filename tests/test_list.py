@@ -5,6 +5,9 @@ from utils import TempConfig
 from axeprofiler.cli import Cli
 
 
+# TODO breakout core test logic into a function with strong param flexibility
+#  set args and call from within each test_func() to consolidate
+
 # NOTE `tmp_path` is a pytest built-in that creates a per-test tmp dir
 #   breaks in a class for some reason - returns a list instead of str path
 def test_no_profiles(tmp_path, mock_q, capsys):
