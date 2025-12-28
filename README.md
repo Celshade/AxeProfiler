@@ -15,8 +15,11 @@ every device dashboard!
 * [python](https://www.python.org/downloads/) >= 3.11
   * requests >= 2.32.5
   * rich >= 14.2.0
+  * [optional] pytest >= 9.0.2 (only used when running the test suite - see
+  **Testing** section below)
 
-  _The python libraries are installed automatically during installation_
+  _The non-optional python libraries are installed automatically during_
+  _installation_
 
 ## Installation
 ### [The Way of the Plebb]
@@ -72,6 +75,27 @@ importing the entry-point function.
 >>> from axeprofiler.__main__ import main
 >>> main()
 ```
+
+## Testing
+_Only available to those cloning from source. The executables will not have_
+_access to the `tests` directory_
+
+Requires:
+* pytest >= 9.0.2
+  - installed via `pip`
+    ```
+    (venv) $ pip install pytest
+    ```
+
+From the project directory, simply `pytest ./tests` to run all available tests,
+or run the `pytest` command and point to a specific test file.
+
+i.e. (showing both options mentioned above)
+```
+(venv) $ pytest ./tests
+(venv) $ pytest ./tests/test_list.py
+```
+
 ## Notes
 * This project is still in active development, and it's possible a few hidden
 bugs linger (though, they are actively hunted down).
