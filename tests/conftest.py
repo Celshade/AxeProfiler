@@ -17,48 +17,61 @@ def mock_q():
 @pytest.fixture
 def mock_exclaim():
     """Mock and yield a '!!' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO("!!")):
         yield
 
 
 @pytest.fixture
 def mock_p():
     """Mock and yield a 'P' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('P')):
         yield
 
 
 @pytest.fixture
 def mock_c():
     """Mock and yield a 'C' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('C')):
         yield
 
 
 @pytest.fixture
 def mock_m():
     """Mock and yield a 'M' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('M')):
         yield
 
 
 @pytest.fixture
 def mock_n():
     """Mock and yield a 'N' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('N')):
         yield
 
 
 @pytest.fixture
 def mock_d():
     """Mock and yield a 'D' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('D')):
         yield
 
 
 @pytest.fixture
 def mock_r():
     """Mock and yield a 'R' input entry for AxeProfiler."""
-    with unittest.mock.patch("sys.stdin", StringIO('Q')):
+    with unittest.mock.patch("sys.stdin", StringIO('R')):
         yield
 
+
+@pytest.fixture
+def mock_1():
+    """Mock and yield a '1' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('1')):
+        yield
+
+
+@pytest.fixture
+def mock_7():
+    """Mock and yield a '7' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('7')):
+        yield
