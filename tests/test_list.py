@@ -44,7 +44,62 @@ def test_list_one_page(tmp_path, mock_q, capsys):
         # assert 0  # NOTE testing
 
 
-def test_list_mul_page(tmp_path, mock_q, capsys):
+def test_list_mul_page_q(tmp_path, mock_q, capsys):
+    path = str(tmp_path.joinpath()) + '/'
+    # print(path)  # NOTE testing
+    with TempConfig(path, 6):
+        # print(os.listdir(path))  # NOTE testing
+        # Test for more than 1 page (4 per page)
+        cli = Cli()
+        assert cli.profile_dir == path
+        assert cli.num_profiles == 6
+        cli.list_profiles(first_page=True)
+
+        # Test for [P] (page) option
+        out = str(capsys.readouterr())
+        # print(out)  # NOTE testing
+        assert "[P]" in out
+        # assert 0  # NOTE testing
+
+
+def test_list_mul_page_7(tmp_path, mock_p, mock_7, capsys):
+    path = str(tmp_path.joinpath()) + '/'
+    # print(path)  # NOTE testing
+    with TempConfig(path, 7):
+        # print(os.listdir(path))  # NOTE testing
+        # Test for more than 1 page (4 per page)
+        cli = Cli()
+        assert cli.profile_dir == path
+        assert cli.num_profiles == 7
+        cli.list_profiles(first_page=True)
+
+        # Test for [P] (page) option removed due to prompt clear on final page
+        out = str(capsys.readouterr())
+        print(out)  # NOTE testing
+        # assert "[P]" in out
+        # assert 0  # NOTE testing
+
+
+def test_list_mul_page_select_forward(tmp_path, mock_7, capsys):
+    path = str(tmp_path.joinpath()) + '/'
+    # print(path)  # NOTE testing
+    with TempConfig(path, 7):
+        # print(os.listdir(path))  # NOTE testing
+        # Test for more than 1 page (4 per page)
+        cli = Cli()
+        assert cli.profile_dir == path
+        assert cli.num_profiles == 7
+        cli.list_profiles(first_page=True)
+
+        # Test for [P] (page) option and 7 in choices (which is mocked input)
+        out = str(capsys.readouterr())
+        # print(out)  # NOTE testing
+        assert all(("[P]" in out, '7' in out))
+        # assert 0  # NOTE testing
+
+
+# NOTE consecutive mocked inputs confirmed to work in arg-sequence
+def test_list_mul_page_select_retro(tmp_path, mock_p, mock_1, capsys):
     path = str(tmp_path.joinpath()) + '/'
     # print(path)  # NOTE testing
     with TempConfig(path, 5):
@@ -52,11 +107,12 @@ def test_list_mul_page(tmp_path, mock_q, capsys):
         # Test for more than 1 page (4 per page)
         cli = Cli()
         assert cli.profile_dir == path
-        assert cli.num_profiles > 4
+        assert cli.num_profiles == 5
         cli.list_profiles(first_page=True)
 
-        # Test for [P] (page) option
+        # Test successful pagination and retro selection
         out = str(capsys.readouterr())
         # print(out)  # NOTE testing
-        assert "[P]" in out
+        assert cli.profile
+        assert cli.profile.name == os.listdir(cli.profile_dir)[0].split('.')[0]
         # assert 0  # NOTE testing
