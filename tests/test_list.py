@@ -1,7 +1,7 @@
 import os
 import json
 
-from utils import TempConfig
+from shared import TempConfig
 from axeprofiler.cli import Cli
 
 
