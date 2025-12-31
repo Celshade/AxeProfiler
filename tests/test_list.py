@@ -7,19 +7,29 @@ from axeprofiler.cli import Cli
 
 # TODO breakout core test logic into a function with strong param flexibility
 #  set args and call from within each test_func() to consolidate
+def test_config_handling(tmp_path: str):
+    path = str(tmp_path.joinpath()) + '/'
+
+    with TempConfig(path):
+        # Validate config setup and backup
+        assert os.path.exists(".config")
+        assert os.path.exists(".config.backup")
+
+        # Validate path contents within config
+        with open(".config", 'r') as f:
+            assert json.loads(f.read()).get("profile_dir") == path
+            # print(json.loads(f.read()), end='\n')
+
+    # Validate temp config tare-down and backup reinstated.
+    assert os.path.exists(".config")
+    assert not os.path.exists(".config.backup")
+
 
 # NOTE `tmp_path` is a pytest built-in that creates a per-test tmp dir
 #   breaks in a class for some reason - returns a list instead of str path
 def test_no_profiles(tmp_path, mock_q, capsys):
     path = str(tmp_path.joinpath()) + '/'
     with TempConfig(path):
-        # TODO break these config file asserts into their own test
-        assert os.path.exists(".config")
-        assert os.path.exists(".config.backup")
-        with open(".config", 'r') as f:
-            assert json.loads(f.read()).get("profile_dir") == path
-            # print(json.loads(f.read()), end='\n')
-
         # Test for 0 profiles
         cli = Cli()
         assert cli.num_profiles == 0
