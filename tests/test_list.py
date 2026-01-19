@@ -28,11 +28,10 @@ def create_cli_and_test_list(
         stdout: str | None = None,
         num_profiles: int | None = 0,
         first_page: bool = True,
-        profiles: list[dict] = None,  # TODO edit type
+        profiles: list[str] = None,
         num_rendered: int = 0,
-        message: str | None = None,  # TODO message_in: list[str]; check all;
-        # TODO message_out: list[str]; check all
-        message_in: bool = False
+        message_in: list[str] | None = [],
+        message_out: list[str] | None = []
 ):
     with TempConfig(path, num_profiles=num_profiles):
         cli = Cli()  # init CLI
@@ -44,33 +43,33 @@ def create_cli_and_test_list(
                           first_page=first_page)
 
         # Validate output
-        if message and stdout:
+        if (message_in or message_out) and stdout:
             output = str(stdout.readouterr())
+            print(output)
 
-            if message_in:
-                print(f"\n{output}")
-                assert message in output
-            else:
-                print(f"\n{output}")
-                assert message not in output
+            for substring in message_in:
+                assert substring in output
+
+            for substring in message_out:
+                assert substring not in output
 
 
 def test_no_profiles(tmp_path, mock_q, capsys):
     path = f"{tmp_path.joinpath()}/"
     create_cli_and_test_list(path=path, stdout=capsys,
-                             num_profiles=0, message="[P]")
+                             num_profiles=0, message_out=["[P]"])
 
 
 def test_list_one_page(tmp_path, mock_q, capsys):
     path = f"{tmp_path.joinpath()}/"
     create_cli_and_test_list(path=path, stdout=capsys,
-                             num_profiles=1, message="[P]")
+                             num_profiles=1, message_out=["[P]"])
 
 
 def test_list_mul_page_q(tmp_path, mock_q, capsys):
     path = f"{tmp_path.joinpath()}/"
     create_cli_and_test_list(path=path, stdout=capsys,
-                             num_profiles=6, message="[P]", message_in=True)
+                             num_profiles=6, message_in=["[P]"])
 
 
 # FIXME x-y count is off on the upper end (tests-only)
@@ -80,16 +79,14 @@ def test_list_mul_page_7(tmp_path, mock_7, capsys):
     create_cli_and_test_list(path=path, stdout=capsys,
                              num_profiles=7, first_page=False,
                              profiles=os.listdir(path)[4:],
-                             num_rendered=4, message="[P]")
+                             num_rendered=4, message_out=["[P]"])
 
 
 def test_list_mul_page_select_forward(tmp_path, mock_7, capsys):
     path = f"{tmp_path.joinpath()}/"
-    create_cli_and_test_list(path=path, num_profiles=7)
+    create_cli_and_test_list(path=path, num_profiles=7, message_in=["[P]", '7'])
 
     # Test for [P] (page) option and 7 in choices (which is mocked input)
-    out = str(capsys.readouterr())
-    assert all(("[P]" in out, '7' in out))
 
 
 # def test_list_mul_page_select_retro(tmp_path, mock_1, capsys):
