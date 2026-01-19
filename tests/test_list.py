@@ -93,23 +93,11 @@ def test_list_mul_page_select_forward(tmp_path, mock_7, capsys):
                              message_in=["1-4/7", "[1...7]", "(P)"])
 
 
-# def test_list_mul_page_select_retro(tmp_path, mock_1, capsys):
-#     path = f"{tmp_path.joinpath()}/"
-#     # print(path)  # NOTE testing
-#     with TempConfig(path, 5):
-#         # print(os.listdir(path))  # NOTE testing
-#         # Test for more than 1 page (4 per page)
-#         cli = Cli()
-#         assert cli.profile_dir == path
-#         assert cli.num_profiles == 5
-#         cli.list_profiles(profiles=os.listdir(cli.profile_dir)[4:],
-#                           num_rendered=4)
+def test_list_mul_page_select_retro(tmp_path, mock_1, capsys):
+    path = f"{tmp_path.joinpath()}/"
 
-#         # Test successful pagination and retro selection
-#         out = str(capsys.readouterr())
-#         print(out)  # NOTE testing
-#         assert "[P]" not in out
-
-#         assert cli.profile
-#         assert cli.profile.name == os.listdir(cli.profile_dir)[0].split('.')[0]
-#         # assert 0  # NOTE testing
+    create_cli_and_test_list(
+        path=path, stdout=capsys, num_profiles=5, first_page=False,
+        profiles=(4, 5), num_rendered=4,
+        message_in=["5-5/5", "[1...5]", "(Q)"], message_out=["(P)"]
+    )
