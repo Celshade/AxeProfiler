@@ -69,9 +69,29 @@ def mock_1():
     with unittest.mock.patch("sys.stdin", StringIO('1')):
         yield
 
+@pytest.fixture
+def mock_4():
+    """Mock and yield a '4' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('4')):
+        yield
+
+
+@pytest.fixture
+def mock_5():
+    """Mock and yield a '5' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('5')):
+        yield
+
 
 @pytest.fixture
 def mock_7():
     """Mock and yield a '7' input entry for AxeProfiler."""
     with unittest.mock.patch("sys.stdin", StringIO('7')):
+        yield
+
+
+@pytest.fixture
+def mock_11():
+    """Mock and yield a '11' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('11')):
         yield
