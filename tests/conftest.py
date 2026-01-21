@@ -109,3 +109,15 @@ def mock_exc():
     """Mock and yield '!!' input entry for AxeProfiler."""
     with unittest.mock.patch("sys.stdin", StringIO('!!')):
         yield
+
+
+@pytest.fixture
+def create_default():
+    """Mock stdin for a default profile creation sequence.
+
+    Sequence: profile_name (`myprof`), hostname (empty => default),
+    frequency (550), coreVoltage (1150), fanspeed (90), confirm 'y'.
+    """
+    inputs = "myprof\n\n550\n1150\n90\ny\n"
+    with unittest.mock.patch("sys.stdin", StringIO(inputs)):
+        yield
