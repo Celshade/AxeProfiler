@@ -37,8 +37,8 @@ def create_cli_and_test_list(
         return_cli: bool = False,
         extra_profile: dict | None = None
 ):
-    with TempConfig(path,
-                    num_profiles=num_profiles, extra_profile=extra_profile):
+    with TempConfig(path, num_profiles=num_profiles,
+                    extra_profile=extra_profile):
         cli = Cli()  # init CLI
         assert cli.profile_dir == path  # Validate path
 
@@ -94,7 +94,6 @@ def test_list_mul_page_select_forward(tmp_path, mock_7, capsys):
 
 def test_list_mul_page_select_retro(tmp_path, mock_1, capsys):
     path = f"{tmp_path.joinpath()}/"
-
     create_cli_and_test_list(
         path=path, stdout=capsys, num_profiles=5, first_page=False,
         profiles=(4, 5), num_rendered=4,
@@ -115,6 +114,7 @@ def test_list_mul_page_2(tmp_path, mock_5, capsys):
 def test_select_profile_sets_cli_profile(tmp_path, mock_1):
     path = f"{tmp_path.joinpath()}/"
     cli = create_cli_and_test_list(path=path, num_profiles=3, return_cli=True)
+
     assert cli
     assert cli.profile
     assert cli.profile.name == 'test_0'
@@ -137,6 +137,7 @@ def test_multi_step_pagination_and_select(tmp_path, mock_p3_s1):
     path = f"{tmp_path.joinpath()}/"
     # create 9 profiles to require 3 pages
     cli = create_cli_and_test_list(path=path, num_profiles=9, return_cli=True)
+
     assert cli
     assert cli.profile
 
@@ -147,6 +148,7 @@ def test_load_profile_file_not_found(tmp_path, mock_q, capsys):
     # Request a non-existent file
     res = cli._load_profile('nope.json')
     out = capsys.readouterr().out
+
     assert not res
     assert 'Could not find a profile named' in out
 
@@ -171,6 +173,7 @@ def test_truncation_long_profile_name(tmp_path, mock_q, capsys):
     # Re-run the listing while capturing output to inspect truncation
     with unittest.mock.patch("sys.stdin", StringIO('Q')):
         cli.list_profiles(first_page=True)
+
     output = capsys.readouterr().out
     # Filter out setup/creation messages
     filtered = '\n'.join(
