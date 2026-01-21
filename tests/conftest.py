@@ -95,3 +95,17 @@ def mock_11():
     """Mock and yield a '11' input entry for AxeProfiler."""
     with unittest.mock.patch("sys.stdin", StringIO('11')):
         yield
+
+
+@pytest.fixture
+def mock_p3_s1():
+    """Mock and yield two P and one 1 input entries for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('P\nP\n1\n')):
+        yield
+
+
+@pytest.fixture
+def mock_exc():
+    """Mock and yield '!!' input entry for AxeProfiler."""
+    with unittest.mock.patch("sys.stdin", StringIO('!!')):
+        yield
