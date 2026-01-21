@@ -1,6 +1,4 @@
 import os
-from io import StringIO
-import unittest.mock
 
 from shared import TempConfig
 from axeprofiler.cli import Cli
