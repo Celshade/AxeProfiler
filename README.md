@@ -87,8 +87,8 @@ Requires:
     (venv) $ pip install pytest
     ```
 
-From the project directory, simply `pytest ./tests` to run all available tests,
-or run the `pytest` command and point to a specific test file.
+From the project directory, simply call `pytest ./tests` to run all available
+tests, or run the `pytest` command and point to a specific test file.
 
 i.e. (showing both options mentioned above)
 ```
