@@ -16,7 +16,7 @@ def test_create_profile_success(tmp_path, create_default):
         assert os.path.exists(f"{path}{profile.name}.json")
 
 
-def test_create_profile_cancel(tmp_path, mock_exc):
+def test_create_profile_cancel(tmp_path, mock_exclaim):
     path = f"{tmp_path.joinpath()}/"
     # First input is '!!' to cancel during _get_profile_config (mock_exc)
     with TempConfig(path):
